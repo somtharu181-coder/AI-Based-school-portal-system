@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Accountant Dashboard — Scholaro ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        *{box-sizing:border-box;}body{font-family:'Inter',sans-serif;background:#f1f5f9;margin:0;}
+        .dashboard-container{max-width:1100px;margin:0 auto;padding:32px 16px 60px;}
+        .welcome-box{background:linear-gradient(135deg,#1e1b4b,#312e81,#4f46e5);color:white;padding:26px 30px;border-radius:18px;margin-bottom:28px;box-shadow:0 8px 32px rgba(79,70,229,.35);}
+        .welcome-box h2{font-size:1.5rem;font-weight:800;margin:0;}
+        .welcome-box p{font-size:.875rem;opacity:.8;margin:5px 0 0;}
+        .stat-card{background:white;border-radius:16px;padding:22px;box-shadow:0 2px 10px rgba(0,0,0,.07);border:1px solid #e2e8f0;transition:all .25s;}
+        .stat-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.1);}
+        .stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:12px;}
+        .stat-value{font-size:1.8rem;font-weight:800;line-height:1;}
+        .stat-label{font-size:.8rem;color:#64748b;margin-top:4px;font-weight:500;}
+        .action-card{background:white;border-radius:16px;padding:22px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid #e2e8f0;transition:all .25s;}
+        .action-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
+        .action-card h5{font-size:.95rem;font-weight:700;color:#1e293b;margin:10px 0 6px;}
+        .action-card p{font-size:.8rem;color:#64748b;margin-bottom:14px;}
+        .btn-action{display:inline-block;padding:8px 20px;border-radius:10px;font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s;}
+        .btn-action:hover{transform:translateY(-1px);}
+        .chart-card{background:white;border-radius:16px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,.07);border:1px solid #e2e8f0;margin-bottom:24px;}
+        .btn-cred{background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:7px 16px;font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s;}
+        .btn-cred:hover{background:rgba(255,255,255,.25);color:white;}
+        .btn-logout{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:7px 16px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;}
+        .btn-logout:hover{background:rgba(239,68,68,.3);color:white;}
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+
+    <!-- Welcome Bar -->
+    <div class="welcome-box d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h2><i class="bi bi-calculator-fill me-2" style="color:#a5b4fc;"></i>Accountant Dashboard</h2>
+            <p>Financial overview and management tools</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'accounts:change_credentials' %}" class="btn-cred"><i class="bi bi-shield-lock me-1"></i>Change Credentials</a>
+            <form method="POST" action="{% url 'accounts:logout' %}" class="mb-0">
+                {% csrf_token %}
+                <button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right me-1"></i>Logout</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:rgba(16,185,129,.1);"><i class="bi bi-arrow-up-circle-fill" style="color:#10b981;"></i></div>
+                <div class="stat-value" style="color:#10b981;">Rs. {{ total_income }}</div>
+                <div class="stat-label">Total Income</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:rgba(239,68,68,.1);"><i class="bi bi-arrow-down-circle-fill" style="color:#ef4444;"></i></div>
+                <div class="stat-value" style="color:#ef4444;">Rs. {{ total_expense }}</div>
+                <div class="stat-label">Total Expense</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:rgba(245,158,11,.1);"><i class="bi bi-cash-stack" style="color:#f59e0b;"></i></div>
+                <div class="stat-value" style="color:#f59e0b;">Rs. {{ total_salary }}</div>
+                <div class="stat-label">Salary Paid</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:rgba(79,70,229,.1);"><i class="bi bi-wallet2" style="color:#4f46e5;"></i></div>
+                <div class="stat-value" style="color:#4f46e5;">Rs. {{ balance }}</div>
+                <div class="stat-label">Net Balance</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Finance Chart -->
+    <div class="chart-card">
+        <div style="font-size:1rem;font-weight:700;color:#1e293b;margin-bottom:4px;"><i class="bi bi-bar-chart-fill me-2" style="color:#4f46e5;"></i>Financial Overview</div>
+        <div style="font-size:.8rem;color:#94a3b8;margin-bottom:16px;">Income, Expense and Salary comparison</div>
+        <div style="position:relative;height:220px;">
+            <canvas id="financeChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Action Cards -->
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="action-card">
+                <i class="bi bi-cash-coin" style="font-size:2rem;color:#10b981;"></i>
+                <h5>Collect Fee</h5>
+                <p>Record and manage student fee collection</p>
+                <a href="#" class="btn-action" style="background:#10b981;color:white;">Open</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="action-card">
+                <i class="bi bi-receipt" style="font-size:2rem;color:#06b6d4;"></i>
+                <h5>Generate Receipt</h5>
+                <p>Create and print payment receipts</p>
+                <a href="#" class="btn-action" style="background:#06b6d4;color:white;">Open</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="action-card">
+                <i class="bi bi-graph-down-arrow" style="font-size:2rem;color:#ef4444;"></i>
+                <h5>Add Expense</h5>
+                <p>Record school expenses and costs</p>
+                <a href="#" class="btn-action" style="background:#ef4444;color:white;">Open</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="action-card">
+                <i class="bi bi-person-check-fill" style="font-size:2rem;color:#f59e0b;"></i>
+                <h5>Salary</h5>
+                <p>Manage staff salary and payroll</p>
+                <a href="#" class="btn-action" style="background:#f59e0b;color:white;">Manage</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="action-card">
+                <i class="bi bi-file-earmark-bar-graph-fill" style="font-size:2rem;color:#4f46e5;"></i>
+                <h5>Reports</h5>
+                <p>View financial reports and summaries</p>
+                <a href="#" class="btn-action" style="background:#4f46e5;color:white;">View</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+var ctx = document.getElementById('financeChart');
+if(ctx){
+    new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['Income', 'Expense', 'Salary Paid', 'Net Balance'],
+            datasets: [{
+                label: 'Amount (Rs.)',
+                data: [{{ total_income }}, {{ total_expense }}, {{ total_salary }}, {{ balance }}],
+                backgroundColor: ['rgba(16,185,129,0.8)', 'rgba(239,68,68,0.8)', 'rgba(245,158,11,0.8)', 'rgba(79,70,229,0.8)'],
+                borderRadius: 8, borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e293b', titleColor: '#f1f5f9', bodyColor: '#94a3b8', padding: 10, cornerRadius: 8 } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 12 } } },
+                y: { grid: { color: 'rgba(0,0,0,.04)' }, ticks: { color: '#94a3b8', font: { size: 12 } }, beginAtZero: true }
+            }
+        }
+    });
+}
+</script>
+</body>
+</html>

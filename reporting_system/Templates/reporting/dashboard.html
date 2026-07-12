@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporting Dashboard — Scholaro ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        *{box-sizing:border-box;}body{font-family:'Inter',sans-serif;background:#f1f5f9;margin:0;}
+        .page-header{background:linear-gradient(135deg,#1e1b4b,#312e81,#4338ca);color:white;padding:26px 32px;border-radius:0 0 24px 24px;margin-bottom:28px;box-shadow:0 8px 32px rgba(67,56,202,.35);}
+        .page-header h2{font-size:1.7rem;font-weight:800;margin:0;}
+        .page-header p{opacity:.8;font-size:.9rem;margin:4px 0 0;}
+        .stat-card{background:white;border-radius:16px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,.07);border:1px solid #e2e8f0;transition:all .25s;}
+        .stat-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.1);}
+        .stat-number{font-size:2.4rem;font-weight:800;line-height:1;}
+        .stat-label{font-size:.82rem;color:#64748b;margin-top:4px;font-weight:500;}
+        .content-card{background:white;border-radius:16px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,.07);border:1px solid #e2e8f0;margin-bottom:24px;}
+        .card-title{font-size:1rem;font-weight:700;color:#1e293b;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+        .nav-btn{display:flex;align-items:center;gap:10px;padding:14px 20px;border-radius:12px;text-decoration:none;font-size:.875rem;font-weight:600;transition:all .2s;border:1.5px solid transparent;}
+        .nav-btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.1);}
+        .nb-blue{background:rgba(79,70,229,.08);color:#4f46e5;border-color:rgba(79,70,229,.2);}
+        .nb-blue:hover{background:#4f46e5;color:white;}
+        .nb-green{background:rgba(16,185,129,.08);color:#059669;border-color:rgba(16,185,129,.2);}
+        .nb-green:hover{background:#10b981;color:white;}
+        .nb-gray{background:rgba(100,116,139,.08);color:#475569;border-color:rgba(100,116,139,.2);}
+        .nb-gray:hover{background:#64748b;color:white;}
+        .nb-amber{background:rgba(245,158,11,.08);color:#d97706;border-color:rgba(245,158,11,.2);}
+        .nb-amber:hover{background:#f59e0b;color:white;}
+        .summary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;}
+        .summary-row:last-child{border-bottom:none;}
+        .summary-label{font-size:.875rem;color:#64748b;font-weight:500;}
+        .summary-value{font-size:.9rem;font-weight:700;color:#1e293b;}
+        .progress-bar-custom{height:8px;border-radius:4px;background:#f1f5f9;overflow:hidden;margin-top:4px;}
+        .progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#4f46e5,#818cf8);}
+        .alert{border-radius:10px;border:none;border-left:4px solid;font-size:.875rem;}
+    </style>
+</head>
+<body>
+
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+        <h2><i class="bi bi-bar-chart-fill me-2"></i>Reporting Dashboard</h2>
+        <p>Overview of academic performance &amp; analytics</p>
+    </div>
+    <a href="{% url 'accounts:dashboard' %}" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:8px 18px;font-size:.85rem;text-decoration:none;"><i class="bi bi-arrow-left me-1"></i>Back to Admin</a>
+</div>
+
+<div class="container pb-5">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+                {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div style="width:44px;height:44px;background:rgba(79,70,229,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+                    <i class="bi bi-file-earmark-bar-graph-fill" style="color:#4f46e5;font-size:1.2rem;"></i>
+                </div>
+                <div class="stat-number" style="color:#4f46e5;">{{ total_results|default:0 }}</div>
+                <div class="stat-label">Total Results</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div style="width:44px;height:44px;background:rgba(16,185,129,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+                    <i class="bi bi-mortarboard-fill" style="color:#10b981;font-size:1.2rem;"></i>
+                </div>
+                <div class="stat-number" style="color:#10b981;">{{ total_students|default:0 }}</div>
+                <div class="stat-label">Total Students</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div style="width:44px;height:44px;background:rgba(245,158,11,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+                    <i class="bi bi-calendar3" style="color:#f59e0b;font-size:1.2rem;"></i>
+                </div>
+                <div class="stat-number" style="color:#f59e0b;font-size:1.4rem;">{{ latest_term.name|default:"—" }}</div>
+                <div class="stat-label">Latest Term</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Summary Card -->
+        <div class="col-lg-5">
+            <div class="content-card h-100">
+                <div class="card-title"><i class="bi bi-pin-angle-fill" style="color:#4f46e5;"></i>Latest Academic Summary</div>
+                {% if latest_summary %}
+                    <div class="summary-row">
+                        <span class="summary-label">Total Students</span>
+                        <span class="summary-value">{{ latest_summary.total_students }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Average %</span>
+                        <div style="text-align:right;">
+                            <span class="summary-value">{{ latest_summary.average_percentage }}%</span>
+                            <div class="progress-bar-custom" style="width:120px;margin-left:auto;margin-top:4px;">
+                                <div class="progress-fill" id="avg-bar" data-val="{{ latest_summary.average_percentage }}"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Highest %</span>
+                        <span class="summary-value" style="color:#059669;">{{ latest_summary.highest_percentage }}%</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Lowest %</span>
+                        <span class="summary-value" style="color:#dc2626;">{{ latest_summary.lowest_percentage }}%</span>
+                    </div>
+                {% else %}
+                    <div style="text-align:center;padding:40px 0;color:#94a3b8;">
+                        <i class="bi bi-bar-chart" style="font-size:2.5rem;display:block;margin-bottom:8px;"></i>
+                        No summary available yet.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="col-lg-7">
+            <div class="content-card h-100">
+                <div class="card-title"><i class="bi bi-graph-up-arrow" style="color:#4f46e5;"></i>Performance Overview</div>
+                <div style="position:relative;height:220px;">
+                    <canvas id="summaryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="row g-3">
+        <div class="col-md-3">
+            <a href="{% url 'reporting_system:student_results' %}" class="nav-btn nb-blue w-100">
+                <i class="bi bi-clipboard-data-fill"></i>Student Results
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{% url 'reporting_system:academic_summary_list' %}" class="nav-btn nb-green w-100">
+                <i class="bi bi-bar-chart-fill"></i>Academic Summary
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{% url 'reporting_system:audit_logs' %}" class="nav-btn nb-gray w-100">
+                <i class="bi bi-journal-text"></i>Audit Logs
+            </a>
+        </div>
+        <div class="col-md-3">
+            <form method="post" action="{% url 'reporting_system:rebuild_results' %}">
+                {% csrf_token %}
+                <button type="submit" class="nav-btn nb-amber w-100" style="cursor:pointer;font-family:'Inter',sans-serif;">
+                    <i class="bi bi-arrow-clockwise"></i>Rebuild Results
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var avgBar = document.getElementById("avg-bar");
+    if (avgBar) { avgBar.style.width = Math.min(parseFloat(avgBar.getAttribute("data-val")) || 0, 100) + "%"; }
+
+    var ctx = document.getElementById('summaryChart');
+    if (ctx) {
+        new Chart(ctx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Average %', 'Highest %', 'Lowest %'],
+                datasets: [{
+                    label: 'Percentage',
+                    data: [
+                        {% if latest_summary %}{{ latest_summary.average_percentage }}, {{ latest_summary.highest_percentage }}, {{ latest_summary.lowest_percentage }}{% else %}0, 0, 0{% endif %}
+                    ],
+                    backgroundColor: ['rgba(79,70,229,0.8)', 'rgba(16,185,129,0.8)', 'rgba(239,68,68,0.8)'],
+                    borderRadius: 8, borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e293b', titleColor: '#f1f5f9', bodyColor: '#94a3b8', padding: 10, cornerRadius: 8 } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 12 } } },
+                    y: { grid: { color: 'rgba(0,0,0,.04)' }, ticks: { color: '#94a3b8', font: { size: 12 } }, beginAtZero: true, max: 100 }
+                }
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>

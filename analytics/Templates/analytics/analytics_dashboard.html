@@ -1,0 +1,340 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Analytics Dashboard — Scholaro ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        *{box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;margin:0;}
+        .page-header{background:linear-gradient(135deg,#1e1b4b 0%,#1e3a5f 50%,#0f172a 100%);padding:24px 32px;border-bottom:1px solid #1e40af;margin-bottom:28px;}
+        .page-header h3{font-size:1.5rem;font-weight:800;margin:0;color:white;}
+        .ai-badge{background:#7c3aed;color:#ede9fe;font-size:.7rem;padding:3px 10px;border-radius:20px;font-weight:600;vertical-align:middle;}
+        .page-header p{color:#64748b;font-size:.82rem;margin:4px 0 0;}
+        .stat-card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px;text-align:center;cursor:pointer;transition:.2s;}
+        .stat-card:hover{border-color:#4f46e5;transform:translateY(-2px);}
+        .stat-card .number{font-size:2rem;font-weight:800;color:#38bdf8;line-height:1;}
+        .stat-card .label{font-size:.8rem;color:#64748b;margin-top:4px;}
+        .stat-card .hint{font-size:.65rem;color:#334155;margin-top:4px;}
+        .table-card{background:#1e293b;border:1px solid #334155;border-radius:14px;overflow:hidden;}
+        .table-dark thead th{background:#0f172a;color:#64748b;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;border-color:#334155;padding:13px 16px;}
+        .table-dark td{border-color:#334155;vertical-align:middle;padding:12px 16px;font-size:.875rem;}
+        .table-dark tbody tr:hover{background:rgba(255,255,255,.03);}
+        .badge-risk{padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;color:#fff;cursor:pointer;}
+        .badge-risk-high{background:#dc2626;}
+        .badge-risk-medium{background:#d97706;}
+        .badge-risk-low{background:#16a34a;}
+        .mark-good{color:#4ade80;font-weight:700;}
+        .mark-average{color:#facc15;font-weight:700;}
+        .mark-poor{color:#f87171;font-weight:700;}
+        .att-good{color:#4ade80;}
+        .att-poor{color:#f87171;}
+        .performance-bar{height:6px;border-radius:3px;background:#334155;overflow:hidden;margin-top:4px;}
+        .performance-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#3b82f6,#06b6d4);}
+        .rec-badge{font-size:.72rem;background:#1e40af;color:#bfdbfe;padding:3px 8px;border-radius:20px;display:inline-block;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .btn-view{background:#1d4ed8;color:#fff;border:none;padding:5px 14px;border-radius:8px;font-size:.78rem;text-decoration:none;transition:all .2s;font-weight:600;}
+        .btn-view:hover{background:#2563eb;color:#fff;transform:translateY(-1px);}
+        .empty-state{text-align:center;padding:60px 20px;color:#475569;}
+        .chart-card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:22px;margin-bottom:24px;}
+        .chart-title{font-size:.9rem;font-weight:700;color:#e2e8f0;margin-bottom:4px;}
+        .chart-sub{font-size:.75rem;color:#64748b;margin-bottom:14px;}
+        /* Modal */
+        .modal-dark .modal-content{background:#1e293b;border:1px solid #334155;border-radius:16px;color:#e2e8f0;}
+        .modal-dark .modal-header{border-bottom:1px solid #334155;padding:16px 20px;}
+        .modal-dark .modal-title{font-weight:700;font-size:1rem;}
+        .modal-dark .btn-close{filter:invert(1);}
+        .modal-dark .modal-body{padding:16px 20px;max-height:60vh;overflow-y:auto;}
+        .student-row{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+        .student-row:hover{border-color:#4f46e5;}
+        .trend-improving{color:#4ade80;font-weight:700;}
+        .trend-declining{color:#f87171;font-weight:700;}
+        .trend-stable{color:#fbbf24;font-weight:700;}
+    </style>
+</head>
+<body>
+
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+        <h3><i class="bi bi-robot me-2" style="color:#a5b4fc;"></i>AI Analytics Dashboard <span class="ai-badge ms-2">Smart Result Analysis</span></h3>
+        <p>Smart Result Analysis — Prediction &amp; Recommendation Pipeline</p>
+    </div>
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+        <small style="color:#475569;">{{ message }}</small>
+        <a href="{% url 'analytics:teacher_analytics' %}" style="background:rgba(99,102,241,.15);color:#a5b4fc;border:1px solid rgba(99,102,241,.3);border-radius:10px;padding:7px 16px;font-size:.82rem;text-decoration:none;font-weight:600;"><i class="bi bi-person-badge-fill me-1"></i>Teacher View</a>
+        <a href="{% url 'analytics:principal_analytics' %}" style="background:rgba(139,92,246,.15);color:#c4b5fd;border:1px solid rgba(139,92,246,.3);border-radius:10px;padding:7px 16px;font-size:.82rem;text-decoration:none;font-weight:600;"><i class="bi bi-building me-1"></i>Principal View</a>
+        <a href="{% url 'accounts:dashboard' %}" style="background:rgba(255,255,255,.08);color:#94a3b8;border:1px solid #334155;border-radius:10px;padding:7px 16px;font-size:.82rem;text-decoration:none;"><i class="bi bi-arrow-left me-1"></i>Back to Admin</a>
+    </div>
+</div>
+
+<div class="container-fluid px-4 pb-5">
+
+    <!-- Stats — clickable risk cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="number">{{ total_students }}</div>
+                <div class="label">Students Analysed</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" data-bs-toggle="modal" data-bs-target="#modalHighRisk">
+                <div class="number" style="color:#f87171;">{{ high_risk_count|default:0 }}</div>
+                <div class="label">High Risk Students</div>
+                <div class="hint"><i class="bi bi-cursor-fill me-1"></i>Click to see names</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" data-bs-toggle="modal" data-bs-target="#modalMediumRisk">
+                <div class="number" style="color:#fbbf24;">{{ medium_risk_count|default:0 }}</div>
+                <div class="label">Medium Risk Students</div>
+                <div class="hint"><i class="bi bi-cursor-fill me-1"></i>Click to see names</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" data-bs-toggle="modal" data-bs-target="#modalLowRisk">
+                <div class="number" style="color:#4ade80;">{{ low_risk_count|default:0 }}</div>
+                <div class="label">Low Risk Students</div>
+                <div class="hint"><i class="bi bi-cursor-fill me-1"></i>Click to see names</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Chart -->
+    {% if data %}
+    <div class="chart-card">
+        <div class="chart-title"><i class="bi bi-bar-chart-fill me-2" style="color:#38bdf8;"></i>Performance Score Distribution</div>
+        <div class="chart-sub">Performance scores across all analysed students</div>
+        <div style="position:relative;height:200px;"><canvas id="perfChart"></canvas></div>
+    </div>
+    {% endif %}
+
+    <!-- Search & Filter Bar -->
+    {% if data %}
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+        <div style="flex:1;min-width:200px;">
+            <div style="position:relative;">
+                <i class="bi bi-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#475569;font-size:.85rem;"></i>
+                <input type="text" id="analyticsSearch" placeholder="Search student name or section..."
+                    style="width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px 12px 8px 32px;color:#e2e8f0;font-size:.85rem;font-family:'Inter',sans-serif;"
+                    oninput="filterAnalytics()">
+            </div>
+        </div>
+        <div>
+            <select id="riskFilter" onchange="filterAnalytics()"
+                style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px 12px;color:#e2e8f0;font-size:.85rem;font-family:'Inter',sans-serif;">
+                <option value="">All Risk Levels</option>
+                <option value="high">High Risk</option>
+                <option value="medium">Medium Risk</option>
+                <option value="low">Low Risk</option>
+            </select>
+        </div>
+        <div>
+            <select id="trendFilter" onchange="filterAnalytics()"
+                style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px 12px;color:#e2e8f0;font-size:.85rem;font-family:'Inter',sans-serif;">
+                <option value="">All Trends</option>
+                <option value="improving">Improving</option>
+                <option value="attention">Needs Attention</option>
+                <option value="good">Good</option>
+                <option value="stable">Stable</option>
+            </select>
+        </div>
+        <div style="color:#475569;font-size:.78rem;" id="filterCount"></div>
+    </div>
+    {% endif %}
+
+    <!-- Main Table -->
+    {% if data %}
+    <div class="table-card">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Student</th>
+                        <th>Avg %</th>
+                        <th>GPA</th>
+                        <th>Attendance</th>
+                        <th>Performance</th>
+                        <th>Trend</th>
+                        <th>Risk Level</th>
+                        <th>Top Recommendation</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for item in data %}
+                <tr>
+                    <td style="color:#475569;">{{ forloop.counter }}</td>
+                    <td>
+                        <div style="font-weight:600;color:#e2e8f0;">{{ item.student.user.get_full_name|default:item.student.user.username }}</div>
+                        <small style="color:#475569;">{{ item.student.section }} | Roll {{ item.student.roll_number }}</small>
+                    </td>
+                    <td>
+                        {% if item.analytics.average_percentage >= 75 %}<span class="mark-good">{{ item.analytics.average_percentage }}%</span>
+                        {% elif item.analytics.average_percentage >= 50 %}<span class="mark-average">{{ item.analytics.average_percentage }}%</span>
+                        {% else %}<span class="mark-poor">{{ item.analytics.average_percentage }}%</span>{% endif %}
+                    </td>
+                    <td style="color:#94a3b8;">{{ item.analytics.gpa }}</td>
+                    <td>
+                        {% if item.analytics.attendance_percentage >= 75 %}<span class="att-good">{{ item.analytics.attendance_percentage }}%</span>
+                        {% else %}<span class="att-poor">{{ item.analytics.attendance_percentage }}%</span>{% endif %}
+                    </td>
+                    <td style="min-width:120px;">
+                        <div class="performance-bar">
+                            <div class="performance-fill" data-score="{{ item.analytics.performance_score }}"></div>
+                        </div>
+                        <small style="color:#475569;">{{ item.analytics.performance_score }}</small>
+                    </td>
+                    <td>
+                        {% if item.analytics.average_percentage >= 75 %}
+                            <span class="trend-improving">↑ Improving</span>
+                        {% elif item.analytics.average_percentage < 40 or item.analytics.failed_count > 0 %}
+                            <span class="trend-declining">↓ Needs Attention</span>
+                        {% elif item.analytics.average_percentage >= 60 %}
+                            <span class="trend-improving">↑ Good</span>
+                        {% else %}
+                            <span class="trend-stable">→ Stable</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge-risk badge-risk-{{ item.analytics.risk_level }}"
+                              data-bs-toggle="modal"
+                              data-bs-target="#modal{{ item.analytics.risk_level|capfirst }}Risk">
+                            {{ item.analytics.risk_level|upper }}
+                        </span>
+                    </td>
+                    <td><span class="rec-badge" title="{{ item.recommendation.message }}">{{ item.recommendation.title }}</span></td>
+                    <td><a href="{% url 'analytics:student_detail' item.student.id %}" class="btn-view">View Report</a></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="bi bi-bar-chart" style="color:#334155;"></i>
+        <h5 style="color:#475569;">No Analytics Data Available</h5>
+        <p style="color:#334155;font-size:.875rem;">No active students with marks data found.</p>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- MODAL: High Risk Students -->
+<div class="modal fade" id="modalHighRisk" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-dark">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2" style="color:#f87171;"></i>High Risk Students</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% for item in data %}{% if item.analytics.risk_level == 'high' %}
+        <div class="student-row">
+          <div>
+            <div style="font-weight:600;color:#e2e8f0;">{{ item.student.user.get_full_name|default:item.student.user.username }}</div>
+            <small style="color:#64748b;">{{ item.student.section }} | Roll {{ item.student.roll_number }} | Avg: {{ item.analytics.average_percentage }}% | Att: {{ item.analytics.attendance_percentage }}%</small>
+          </div>
+          <a href="{% url 'analytics:student_detail' item.student.id %}" class="btn-view" style="font-size:.72rem;padding:4px 10px;">Detail</a>
+        </div>
+        {% endif %}{% endfor %}
+        {% if not data %}<p style="color:#475569;">No data available.</p>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Medium Risk Students -->
+<div class="modal fade" id="modalMediumRisk" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-dark">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-dash-circle-fill me-2" style="color:#fbbf24;"></i>Medium Risk Students</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% for item in data %}{% if item.analytics.risk_level == 'medium' %}
+        <div class="student-row">
+          <div>
+            <div style="font-weight:600;color:#e2e8f0;">{{ item.student.user.get_full_name|default:item.student.user.username }}</div>
+            <small style="color:#64748b;">{{ item.student.section }} | Roll {{ item.student.roll_number }} | Avg: {{ item.analytics.average_percentage }}% | Att: {{ item.analytics.attendance_percentage }}%</small>
+          </div>
+          <a href="{% url 'analytics:student_detail' item.student.id %}" class="btn-view" style="font-size:.72rem;padding:4px 10px;">Detail</a>
+        </div>
+        {% endif %}{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Low Risk Students -->
+<div class="modal fade" id="modalLowRisk" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-dark">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-check-circle-fill me-2" style="color:#4ade80;"></i>Low Risk Students</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% for item in data %}{% if item.analytics.risk_level == 'low' %}
+        <div class="student-row">
+          <div>
+            <div style="font-weight:600;color:#e2e8f0;">{{ item.student.user.get_full_name|default:item.student.user.username }}</div>
+            <small style="color:#64748b;">{{ item.student.section }} | Roll {{ item.student.roll_number }} | Avg: {{ item.analytics.average_percentage }}% | Att: {{ item.analytics.attendance_percentage }}%</small>
+          </div>
+          <a href="{% url 'analytics:student_detail' item.student.id %}" class="btn-view" style="font-size:.72rem;padding:4px 10px;">Detail</a>
+        </div>
+        {% endif %}{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.querySelectorAll('.performance-fill').forEach(function(el){
+    var s = parseFloat(el.getAttribute('data-score'))||0;
+    el.style.width = Math.min(s,100)+'%';
+});
+{% if data %}
+(function(){
+    var labels=[],scores=[],colors=[];
+    {% for item in data %}
+        labels.push("{{ item.student.user.username|truncatechars:10 }}");
+        scores.push({{ item.analytics.performance_score }});
+        colors.push({{ item.analytics.performance_score }}>=70?'rgba(74,222,128,0.8)':{{ item.analytics.performance_score }}>=40?'rgba(250,204,21,0.8)':'rgba(248,113,113,0.8)');
+    {% endfor %}
+    var ctx=document.getElementById('perfChart');
+    if(ctx){new Chart(ctx.getContext('2d'),{type:'bar',data:{labels:labels,datasets:[{label:'Performance Score',data:scores,backgroundColor:colors,borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleColor:'#f1f5f9',bodyColor:'#94a3b8',padding:10,cornerRadius:8}},scales:{x:{grid:{display:false},ticks:{color:'#475569',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#475569',font:{size:10}},beginAtZero:true}}}});}
+})();
+{% endif %}
+function filterAnalytics(){
+    var q    = document.getElementById('analyticsSearch') ? document.getElementById('analyticsSearch').value.toLowerCase() : '';
+    var risk = document.getElementById('riskFilter')      ? document.getElementById('riskFilter').value.toLowerCase()      : '';
+    var trend= document.getElementById('trendFilter')     ? document.getElementById('trendFilter').value.toLowerCase()     : '';
+    var rows = document.querySelectorAll('table.table-dark tbody tr');
+    var shown= 0;
+    rows.forEach(function(row){
+        var text     = row.textContent.toLowerCase();
+        var riskCell = row.cells[7] ? row.cells[7].textContent.toLowerCase() : '';
+        var trendCell= row.cells[6] ? row.cells[6].textContent.toLowerCase() : '';
+        var trendMap = {improving:'improving', attention:'needs attention', good:'good', stable:'stable'};
+        var qMatch    = !q    || text.includes(q);
+        var riskMatch = !risk || riskCell.includes(risk);
+        var trendMatch= !trend|| trendCell.includes(trendMap[trend]||trend);
+        if(qMatch && riskMatch && trendMatch){ row.style.display=''; shown++; }
+        else{ row.style.display='none'; }
+    });
+    var fc = document.getElementById('filterCount');
+    if(fc) fc.textContent = shown + ' student' + (shown===1?'':'s') + ' shown';
+}
+document.addEventListener('DOMContentLoaded', filterAnalytics);
+</script>
+</body>
+</html>

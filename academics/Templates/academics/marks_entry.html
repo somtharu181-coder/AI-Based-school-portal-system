@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enter Marks — Scholaro ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{box-sizing:border-box;}body{font-family:'Inter',sans-serif;background:#f1f5f9;margin:0;}
+        .page-header{background:linear-gradient(135deg,#1e1b4b,#312e81,#4f46e5);color:white;padding:22px 28px;border-radius:0 0 20px 20px;margin-bottom:24px;box-shadow:0 6px 24px rgba(79,70,229,.3);}
+        .page-header h4{font-size:1.4rem;font-weight:800;margin:0;}
+        .page-header small{opacity:.8;font-size:.85rem;}
+        .table-card{background:white;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.07);border:1px solid #e2e8f0;overflow:hidden;}
+        .marks-table thead th{background:#1e1b4b;color:#a5b4fc;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:12px 10px;border:none;white-space:nowrap;}
+        .marks-table td{vertical-align:middle;padding:10px 8px;border-bottom:1px solid #f1f5f9;font-size:.875rem;}
+        .marks-table tbody tr:last-child td{border-bottom:none;}
+        .marks-table tbody tr:hover{background:rgba(79,70,229,.03);}
+        .marks-input{width:72px;text-align:center;border:1.5px solid #e2e8f0;border-radius:8px;padding:5px 6px;font-size:.85rem;font-family:'Inter',sans-serif;background:#f8fafc;transition:all .2s;}
+        .marks-input:focus{border-color:#4f46e5;outline:none;box-shadow:0 0 0 2px rgba(79,70,229,.15);background:white;}
+        .student-name{font-weight:600;font-size:.9rem;color:#1e293b;}
+        .roll-badge{font-size:.72rem;color:#94a3b8;margin-top:2px;}
+        .btn-save{background:linear-gradient(135deg,#4f46e5,#6366f1);color:white;border:none;border-radius:10px;padding:11px 32px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;}
+        .btn-save:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(79,70,229,.4);}
+        .alert{border-radius:10px;border:none;border-left:4px solid;font-size:.875rem;}
+        .subj-header{font-size:.78rem;font-weight:700;color:white;}
+        .subj-meta{font-size:.65rem;opacity:.7;font-weight:400;}
+        .th-sub{font-size:.65rem;background:#2d2a6e;color:#a5b4fc;padding:8px 6px;border:none;}
+    </style>
+</head>
+<body>
+
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h4><i class="bi bi-pencil-square me-2"></i>Enter Student marks</h4>
+        {% if section and exam_term %}
+            <small>{{ section }} &mdash; {{ exam_term.name }} ({{ exam_term.academic_year.name }})</small>
+        {% endif %}
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'academics:marks_entry_select' %}" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:7px 16px;font-size:.82rem;text-decoration:none;"><i class="bi bi-arrow-left me-1"></i>Change Section</a>
+        <a href="{% url 'academics:academic_dashboard' %}" style="background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:7px 16px;font-size:.82rem;text-decoration:none;">Dashboard</a>
+    </div>
+</div>
+
+<div class="container-fluid px-4 pb-5">
+
+    {% if messages %}
+        {% for m in messages %}
+            <div class="alert alert-{{ m.tags|default:'info' }} alert-dismissible fade show mb-3">
+                {{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if section and exam_term and students and subjects %}
+
+    {% if no_subjects_for_year %}
+    <div class="alert alert-warning alert-dismissible fade show mb-3">
+        <strong><i class="bi bi-exclamation-triangle-fill me-1"></i>Note:</strong>
+        No subjects are assigned to <strong>{{ section.class_obj.name }}</strong> for academic year <strong>{{ exam_term.academic_year.name }}</strong>.
+        Showing subjects from other years as a fallback.
+        <a href="{% url 'academics:assign_subject_to_class' %}" class="alert-link">Assign subjects to this year →</a>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="section_id" value="{{ section_id }}">
+        <input type="hidden" name="term_id" value="{{ term_id }}">
+
+        <div class="table-card mb-3">
+            <div class="table-responsive">
+                <table class="table marks-table mb-0">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="min-width:160px;vertical-align:middle;background:#1e1b4b;color:#e2e8f0;">Student</th>
+                            {% for subj in subjects %}
+                                <th colspan="2" class="text-center" style="background:#1e1b4b;border-left:1px solid rgba(255,255,255,.1);">
+                                    <div class="subj-header">{{ subj.subject.name }}</div>
+                                    <div class="subj-meta">Full: {{ subj.full_marks }} | Pass: {{ subj.pass_marks }}</div>
+                                </th>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            {% for subj in subjects %}
+                                <th class="th-sub text-center" style="border-left:1px solid rgba(255,255,255,.08);">Theory</th>
+                                <th class="th-sub text-center">Practical</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for student in students %}
+                        <tr>
+                            <td>
+                                <div class="student-name">{{ student.name|default:student }}</div>
+                                <div class="roll-badge"><i class="bi bi-hash"></i>{{ student.roll_number }}</div>
+                            </td>
+                            {% for subj in subjects %}
+                                <td class="text-center" style="border-left:1px solid #f1f5f9;">
+                                    <input type="number" class="marks-input"
+                                           name="theory_{{ student.id }}_{{ subj.id }}"
+                                           id="theory_{{ student.id }}_{{ subj.id }}"
+                                           min="0" max="{{ subj.full_marks }}" step="0.5" value="0" placeholder="0">
+                                </td>
+                                <td class="text-center">
+                                    <input type="number" class="marks-input"
+                                           name="practical_{{ student.id }}_{{ subj.id }}"
+                                           id="practical_{{ student.id }}_{{ subj.id }}"
+                                           min="0" max="{{ subj.full_marks }}" step="0.5" value="0" placeholder="0">
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-3">
+            <a href="{% url 'academics:marks_entry_select' %}" style="background:#f1f5f9;color:#64748b;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 24px;font-size:.9rem;font-weight:600;text-decoration:none;">Cancel</a>
+            <button type="submit" class="btn-save"><i class="bi bi-floppy-fill me-1"></i>Save All Marks</button>
+        </div>
+    </form>
+
+    {% elif section and exam_term %}
+        <div class="alert alert-warning">
+            <strong><i class="bi bi-exclamation-triangle-fill me-1"></i>No active students found</strong> in <strong>{{ section }}</strong>.
+            Make sure students are enrolled in this section with status <em>Active</em>.
+            <a href="{% url 'students:student_list' %}" class="alert-link">Go to Student Management →</a>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            Please <a href="{% url 'academics:marks_entry_select' %}" class="alert-link">select a section and exam term</a> to begin entering marks.
+        </div>
+    {% endif %}
+
+</div>
+
+<script id="existing-marks" type="application/json">{{ existing_json|safe }}</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var raw = document.getElementById("existing-marks");
+    if (!raw) return;
+    try {
+        var data = JSON.parse(raw.textContent || raw.innerHTML);
+        Object.keys(data).forEach(function(key) {
+            var inp = document.getElementById(key);
+            if (inp && data[key] !== "0") inp.value = data[key];
+        });
+    } catch(e) { console.warn("Could not pre-fill existing marks:", e); }
+});
+</script>
+</body>
+</html>

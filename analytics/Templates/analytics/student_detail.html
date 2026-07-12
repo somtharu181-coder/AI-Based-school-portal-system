@@ -1,0 +1,791 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student AI Report — Scholaro ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        *{box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;margin:0;}
+        .page-header{background:linear-gradient(135deg,#1e1b4b,#1e3a5f,#0f172a);padding:22px 32px;border-bottom:1px solid #1e40af;margin-bottom:24px;}
+        .back-btn{background:#1e293b;color:#94a3b8;border:1px solid #334155;padding:7px 16px;border-radius:9px;text-decoration:none;font-size:.82rem;transition:all .2s;}
+        .back-btn:hover{background:#334155;color:white;}
+        .ai-badge{background:#7c3aed;color:#ede9fe;font-size:.7rem;padding:3px 10px;border-radius:20px;font-weight:600;}
+        .card-dark{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px;margin-bottom:20px;}
+        .section-title{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:#475569;margin-bottom:12px;font-weight:700;}
+        .stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #334155;}
+        .stat-row:last-child{border-bottom:none;}
+        .stat-label{color:#64748b;font-size:.875rem;}
+        .stat-value{font-weight:600;color:#e2e8f0;}
+        .risk-high{color:#f87171;}
+        .risk-medium{color:#fbbf24;}
+        .risk-low{color:#4ade80;}
+        .rec-card{background:#0f172a;border:1px solid #1e40af;border-radius:10px;padding:16px;margin-bottom:12px;}
+        .rec-card .rec-title{font-weight:700;color:#93c5fd;margin-bottom:6px;font-size:.9rem;}
+        .rec-card .rec-message{font-size:.875rem;color:#94a3b8;line-height:1.6;}
+        .confidence-bar{height:4px;border-radius:2px;background:#334155;margin-top:10px;overflow:hidden;}
+        .confidence-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#6366f1,#06b6d4);}
+        .confidence-label{font-size:.7rem;color:#475569;margin-top:4px;}
+        .pred-table th{background:#0f172a;color:#64748b;font-size:.72rem;text-transform:uppercase;border-color:#334155;}
+        .pred-table td{vertical-align:middle;border-color:#334155;font-size:.875rem;}
+        .trend-improving{color:#4ade80;font-weight:700;}
+        .trend-declining{color:#f87171;font-weight:700;}
+        .trend-stable{color:#fbbf24;font-weight:700;}
+        .mark-good{color:#4ade80;font-weight:700;}
+        .mark-average{color:#facc15;font-weight:700;}
+        .mark-poor{color:#f87171;font-weight:700;}
+        .chart-card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px;margin-bottom:20px;}
+        .chart-title{font-size:.85rem;font-weight:700;color:#e2e8f0;margin-bottom:4px;}
+        .chart-sub{font-size:.72rem;color:#475569;margin-bottom:12px;}
+    </style>
+</head>
+<body>
+
+<div class="page-header d-flex align-items-center gap-3">
+    <a href="{% url back_url %}" class="back-btn"><i class="bi bi-arrow-left me-1"></i>Back</a>
+    <div>
+        <h4 style="margin:0;font-size:1.2rem;font-weight:800;color:white;">
+            Student AI Report <span class="ai-badge ms-2">Smart Result Analysis</span>
+        </h4>
+    </div>
+</div>
+
+<div class="container py-2 pb-5">
+
+    {% if error %}
+    <div class="alert alert-danger" style="border-radius:12px;border:none;border-left:4px solid #ef4444;">{{ message }}</div>
+    {% else %}
+
+    <div class="row g-4">
+
+        <!-- LEFT: Student Info + Analytics -->
+        <div class="col-lg-4">
+
+            <div class="card-dark">
+                <div class="section-title">Student Profile</div>
+                <h5 style="color:#38bdf8;font-weight:700;margin-bottom:12px;">{{ student.user.get_full_name|default:student.user.username }}</h5>
+                <div class="stat-row"><span class="stat-label">Student ID</span><span class="stat-value" style="font-family:monospace;font-size:.85rem;">{{ student.student_id }}</span></div>
+                <div class="stat-row"><span class="stat-label">Class / Section</span><span class="stat-value">{{ student.section }}</span></div>
+                <div class="stat-row"><span class="stat-label">Roll Number</span><span class="stat-value">{{ student.roll_number }}</span></div>
+                <div class="stat-row"><span class="stat-label">Status</span><span class="stat-value">{{ student.status|capfirst }}</span></div>
+            </div>
+
+            <div class="card-dark">
+                <div class="section-title">AI Analysis</div>
+                <div class="stat-row">
+                    <span class="stat-label">Average Percentage</span>
+                    <span class="stat-value {% if analytics.average_percentage >= 75 %}text-success{% elif analytics.average_percentage >= 50 %}text-warning{% else %}text-danger{% endif %}">{{ analytics.average_percentage }}%</span>
+                </div>
+                <div class="stat-row"><span class="stat-label">GPA</span><span class="stat-value">{{ analytics.gpa }}</span></div>
+                <div class="stat-row">
+                    <span class="stat-label">Attendance</span>
+                    <span class="stat-value {% if analytics.attendance_percentage >= 75 %}text-success{% else %}text-danger{% endif %}">{{ analytics.attendance_percentage }}%</span>
+                </div>
+                <div class="stat-row"><span class="stat-label">Total Subjects</span><span class="stat-value">{{ analytics.total_subjects }}</span></div>
+                <div class="stat-row"><span class="stat-label">Failed Subjects</span><span class="stat-value text-danger">{{ analytics.failed_count }}</span></div>
+                <div class="stat-row"><span class="stat-label">Performance Score</span><span class="stat-value">{{ analytics.performance_score }}</span></div>
+                <div class="stat-row">
+                    <span class="stat-label">Risk Level</span>
+                    <span class="stat-value risk-{{ analytics.risk_level }}">{{ analytics.risk_level|upper }}</span>
+                </div>
+            </div>
+
+            <!-- Mini chart for analytics -->
+            <div class="chart-card">
+                <div class="chart-title"><i class="bi bi-pie-chart-fill me-1" style="color:#38bdf8;"></i>Performance Overview</div>
+                <div class="chart-sub">Key metrics at a glance</div>
+                <div style="position:relative;height:160px;">
+                    <canvas id="analyticsChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT: Recommendations + Predictions -->
+        <div class="col-lg-8">
+
+            <!-- Recommendations -->
+            <div class="card-dark">
+                <div class="section-title"><i class="bi bi-lightbulb-fill me-1" style="color:#fbbf24;"></i>AI Recommendations <span style="color:#6366f1;font-size:.68rem;margin-left:6px;">Content-Based Filtering</span></div>
+                {% if recommendations %}
+                    {% for rec in recommendations %}
+                    <div class="rec-card">
+                        <div class="rec-title">{{ rec.title }}</div>
+                        <div class="rec-message">{{ rec.message }}</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" data-pct="{% widthratio rec.confidence 1 100 %}"></div>
+                        </div>
+                        <div class="confidence-label">Confidence: {{ rec.confidence|floatformat:0 }}% &nbsp;|&nbsp; Algorithm: Content-Based + Scikit-learn</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color:#475569;font-size:.875rem;">No recommendations available.</p>
+                {% endif %}
+            </div>
+
+            <!-- Predictions Chart -->
+            {% if predictions %}
+            <div class="chart-card">
+                <div class="chart-title"><i class="bi bi-graph-up-arrow me-1" style="color:#4ade80;"></i>Predicted Next Term Performance</div>
+                <div class="chart-sub">Scikit-learn Linear Regression predictions per subject</div>
+                <div style="position:relative;height:200px;">
+                    <canvas id="predChart"></canvas>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Predictions Table -->
+            <div class="card-dark">
+                <div class="section-title"><i class="bi bi-table me-1" style="color:#38bdf8;"></i>Result Predictions</div>
+                {% if predictions %}
+                <div class="table-responsive">
+                    <table class="table table-dark pred-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Past Scores (%)</th>
+                                <th>Predicted Next (%)</th>
+                                <th>Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for pred in predictions %}
+                        <tr>
+                            <td style="font-weight:600;color:#e2e8f0;">{{ pred.subject }}</td>
+                            <td><small style="color:#475569;">{% for p in pred.past_percentages %}{{ p|floatformat:1 }}{% if not forloop.last %}, {% endif %}{% endfor %}</small></td>
+                            <td>
+                                {% if pred.predicted_percentage >= 75 %}<span class="mark-good">{{ pred.predicted_percentage }}%</span>
+                                {% elif pred.predicted_percentage >= 50 %}<span class="mark-average">{{ pred.predicted_percentage }}%</span>
+                                {% else %}<span class="mark-poor">{{ pred.predicted_percentage }}%</span>{% endif %}
+                            </td>
+                            <td>
+                                <span class="trend-{{ pred.trend }}">
+                                    {% if pred.trend == 'Improving' %}<i class="bi bi-arrow-up-right me-1"></i>Improving
+                                    {% elif pred.trend == 'Declining' %}<i class="bi bi-arrow-down-right me-1"></i>Declining
+                                    {% else %}<i class="bi bi-arrow-right me-1"></i>Stable{% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                    <p style="color:#475569;font-size:.875rem;">Not enough data to generate predictions.</p>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+    {% endif %}
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     NEW PANELS — appended after existing content, existing HTML untouched
+     ═══════════════════════════════════════════════════════════════ -->
+{% if not error %}
+<div class="container pb-5">
+
+  <!-- PANEL 1: Subject-Wise Prediction Table -->
+  {% if subject_table %}
+  <div class="card-dark mt-2">
+    <div class="section-title"><i class="bi bi-table me-1" style="color:#38bdf8;"></i>Subject-wise Prediction</div>
+    <div class="table-responsive">
+      <table class="table table-dark pred-table mb-0">
+        <thead><tr>
+          <th>Subject</th><th>Previous Term</th><th>Current Term</th>
+          <th>Predicted Next</th><th>Grade</th><th>GPA</th><th>Trend</th><th>Confidence</th>
+        </tr></thead>
+        <tbody>
+        {% for row in subject_table %}
+        <tr>
+          <td style="font-weight:600;color:#e2e8f0;">{{ row.subject }}</td>
+          <td><small style="color:#94a3b8;">{% if row.previous_term_pct %}{{ row.previous_term_pct }}%{% else %}—{% endif %}</small></td>
+          <td><small style="color:#94a3b8;">{% if row.current_term_pct %}{{ row.current_term_pct }}%{% else %}—{% endif %}</small></td>
+          <td>
+            {% if row.predicted_pct >= 75 %}<span class="mark-good">{{ row.predicted_pct }}%</span>
+            {% elif row.predicted_pct >= 40 %}<span class="mark-average">{{ row.predicted_pct }}%</span>
+            {% else %}<span class="mark-poor">{{ row.predicted_pct }}%</span>{% endif %}
+          </td>
+          <td><span style="background:#1e40af;color:#bfdbfe;padding:2px 8px;border-radius:6px;font-size:.75rem;font-weight:700;">{{ row.predicted_grade }}</span></td>
+          <td style="color:#a78bfa;font-weight:600;">{{ row.predicted_gpa }}</td>
+          <td><span class="trend-{{ row.trend }}">{{ row.trend_icon }} {{ row.trend|capfirst }}</span></td>
+          <td>
+            <div style="min-width:80px;">
+              <div style="height:4px;background:#334155;border-radius:2px;overflow:hidden;">
+                <div style="height:100%;background:linear-gradient(90deg,#6366f1,#06b6d4);width:{{ row.confidence_pct }}%;border-radius:2px;"></div>
+              </div>
+              <small style="color:#475569;">{{ row.confidence_pct }}%</small>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- PANEL 2: Term-Wise Forecast Table -->
+  {% if term_forecast %}
+  <div class="card-dark mt-3">
+    <div class="section-title"><i class="bi bi-calendar3 me-1" style="color:#a78bfa;"></i>Academic Progress Forecast</div>
+    <div class="table-responsive">
+      <table class="table table-dark pred-table mb-0">
+        <thead><tr>
+          <th>Term</th><th>Avg %</th><th>Avg GPA</th><th>Pass Count</th><th>Fail Count</th><th>Risk Level</th><th>Status</th>
+        </tr></thead>
+        <tbody>
+        {% for row in term_forecast %}
+        <tr {% if row.is_predicted %}style="background:rgba(30,64,175,0.15);border-left:3px solid #3b82f6;"{% endif %}>
+          <td style="font-weight:600;color:{% if row.is_predicted %}#93c5fd{% else %}#e2e8f0{% endif %};">
+            {{ row.term_label }}
+          </td>
+          <td>
+            {% if row.avg_percentage >= 75 %}<span class="mark-good">{{ row.avg_percentage }}%</span>
+            {% elif row.avg_percentage >= 40 %}<span class="mark-average">{{ row.avg_percentage }}%</span>
+            {% else %}<span class="mark-poor">{{ row.avg_percentage }}%</span>{% endif %}
+          </td>
+          <td style="color:#a78bfa;font-weight:600;">{{ row.avg_gpa }}</td>
+          <td><span style="color:#4ade80;font-weight:600;">{{ row.pass_count }}</span></td>
+          <td><span style="color:#f87171;font-weight:600;">{{ row.fail_count }}</span></td>
+          <td><span class="risk-{{ row.risk_level }}" style="font-weight:700;font-size:.8rem;">{{ row.risk_level|upper }}</span></td>
+          <td>
+            {% if row.is_predicted %}
+              <span style="background:#1e40af;color:#bfdbfe;padding:2px 8px;border-radius:6px;font-size:.72rem;font-weight:700;">Predicted</span>
+            {% else %}
+              <span style="background:#166534;color:#bbf7d0;padding:2px 8px;border-radius:6px;font-size:.72rem;font-weight:700;">Actual</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- PANEL 3: Subject Ranking Panel -->
+  {% if subject_ranking %}
+  <div class="card-dark mt-3">
+    <div class="section-title"><i class="bi bi-trophy-fill me-1" style="color:#fbbf24;"></i>Subject Ranking
+      <span style="margin-left:12px;font-size:.72rem;color:#64748b;">
+        Total: {{ subject_ranking.total_subjects }} Subjects &nbsp;|&nbsp;
+        <span style="color:#4ade80;">{{ subject_ranking.pass_count }} Pass</span> &nbsp;/&nbsp;
+        <span style="color:#f87171;">{{ subject_ranking.fail_count }} FAILING</span>
+      </span>
+    </div>
+    <div class="row g-3">
+      <!-- Strongest -->
+      <div class="col-md-6">
+        <div style="background:#0f172a;border:1px solid #166534;border-radius:10px;padding:14px;">
+          <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-bottom:10px;">
+            <i class="bi bi-star-fill me-1"></i>Strongest Subjects
+          </div>
+          {% for s in subject_ranking.strongest %}
+          <div style="border-bottom:1px solid #1e293b;padding:8px 0;">
+            <div class="d-flex justify-content-between align-items-center">
+              <span style="font-size:.875rem;color:#e2e8f0;font-weight:600;">{{ forloop.counter }}. {{ s.subject }}</span>
+              <span class="mark-good">{{ s.predicted_pct }}%</span>
+            </div>
+            <!-- Term arrows -->
+            <div class="d-flex align-items-center gap-1 mt-1 flex-wrap">
+              {% for pt in s.term_arrows %}
+              <span style="font-size:.7rem;{% if pt.is_predicted %}color:#3b82f6;font-weight:700;{% else %}color:#64748b;{% endif %}">
+                {{ pt.label }}: {{ pt.pct }}%
+              </span>
+              {% if not forloop.last %}
+              {% with idx=forloop.counter0 %}
+              <span style="font-size:.75rem;color:{% if s.dir_arrows|length > idx %}{% if s.dir_arrows|slice:idx|last == '↑' %}#4ade80{% elif s.dir_arrows|slice:idx|last == '↓' %}#f87171{% else %}#fbbf24{% endif %}{% else %}#475569{% endif %};">
+                {% if s.dir_arrows %}→{% endif %}
+              </span>
+              {% endwith %}
+              {% endif %}
+              {% endfor %}
+            </div>
+            <small style="color:#475569;font-size:.68rem;">{{ s.grade }} &nbsp;·&nbsp; {{ s.trend_icon }} {{ s.trend|capfirst }}</small>
+          </div>
+          {% empty %}<p style="color:#475569;font-size:.8rem;">No data</p>{% endfor %}
+        </div>
+      </div>
+      <!-- Needs Attention -->
+      <div class="col-md-6">
+        <div style="background:#0f172a;border:1px solid #7f1d1d;border-radius:10px;padding:14px;">
+          <div style="color:#f87171;font-weight:700;font-size:.8rem;margin-bottom:10px;">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>Needs Attention
+          </div>
+          {% for s in subject_ranking.needs_attention %}
+          <div style="border-bottom:1px solid #1e293b;padding:8px 0;">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <span style="font-size:.875rem;color:#e2e8f0;font-weight:600;">{{ forloop.counter }}. {{ s.subject }}</span>
+                {% if s.category == 'highly_needs_attention' %}
+                <span style="background:rgba(248,113,113,.2);color:#f87171;padding:1px 6px;border-radius:4px;font-size:.65rem;font-weight:700;margin-left:4px;">FAILING</span>
+                {% elif s.category == 'be_careful' %}
+                <span style="background:rgba(251,191,36,.2);color:#fbbf24;padding:1px 6px;border-radius:4px;font-size:.65rem;font-weight:700;margin-left:4px;">BE CAREFUL</span>
+                {% endif %}
+              </div>
+              <span class="mark-poor">{{ s.predicted_pct }}%</span>
+            </div>
+            <!-- Term arrows -->
+            <div class="d-flex align-items-center gap-1 mt-1 flex-wrap">
+              {% for pt in s.term_arrows %}
+              <span style="font-size:.7rem;{% if pt.is_predicted %}color:#3b82f6;font-weight:700;{% else %}color:#64748b;{% endif %}">
+                {{ pt.label }}: {{ pt.pct }}%
+              </span>
+              {% if not forloop.last %}
+              <span style="font-size:.75rem;color:#f87171;">↓</span>
+              {% endif %}
+              {% endfor %}
+            </div>
+            <small style="color:#475569;font-size:.68rem;">{{ s.grade }} &nbsp;·&nbsp; {{ s.trend_icon }} {{ s.trend|capfirst }}</small>
+          </div>
+          {% empty %}<p style="color:#4ade80;font-size:.8rem;"><i class="bi bi-check-circle me-1"></i>All subjects on track</p>{% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- PANEL 4: Performance Insights -->
+  {% if insights %}
+  <div class="card-dark mt-3">
+    <div class="section-title"><i class="bi bi-chat-quote-fill me-1" style="color:#a78bfa;"></i>Performance Insights</div>
+    <ul style="list-style:none;padding:0;margin:0;">
+      {% for insight in insights %}
+      <li style="background:#0f172a;border-left:3px solid #6366f1;border-radius:6px;padding:10px 14px;margin-bottom:8px;font-size:.875rem;color:#cbd5e1;">
+        <i class="bi bi-lightbulb me-2" style="color:#fbbf24;"></i>{{ insight }}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <!-- PANEL 5: Student Future Outlook -->
+  {% if outlook %}
+  <div class="card-dark mt-3">
+    <div class="section-title"><i class="bi bi-binoculars-fill me-1" style="color:#38bdf8;"></i>Future Outlook — Next Term Forecast</div>
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-md-3">
+        <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:1.5rem;font-weight:800;color:#38bdf8;">{{ outlook.predicted_avg_pct }}%</div>
+          <div style="font-size:.72rem;color:#64748b;margin-top:4px;">Predicted Average</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:1.5rem;font-weight:800;color:#a78bfa;">{{ outlook.predicted_gpa }}</div>
+          <div style="font-size:.72rem;color:#64748b;margin-top:4px;">Predicted GPA</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:1.5rem;font-weight:800;color:{% if outlook.predicted_risk_level == 'high' %}#f87171{% elif outlook.predicted_risk_level == 'medium' %}#fbbf24{% else %}#4ade80{% endif %};">
+            {{ outlook.predicted_risk_level|upper }}
+          </div>
+          <div style="font-size:.72rem;color:#64748b;margin-top:4px;">Predicted Risk</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:1.5rem;font-weight:800;color:#4ade80;">{{ outlook.predicted_pass_count }}</div>
+          <div style="font-size:.72rem;color:#64748b;margin-top:4px;">Predicted Pass</div>
+        </div>
+      </div>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-5">
+        <div style="position:relative;height:200px;"><canvas id="outlookChart"></canvas></div>
+      </div>
+      <div class="col-md-7 d-flex align-items-center">
+        <div style="width:100%;">
+          <div class="d-flex justify-content-between mb-2">
+            <span style="color:#64748b;font-size:.85rem;">Predicted Grade</span>
+            <span style="color:#e2e8f0;font-weight:700;">{{ outlook.predicted_grade }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span style="color:#64748b;font-size:.85rem;">Attendance Impact</span>
+            <span style="color:{% if outlook.attendance_impact == 'Positive' %}#4ade80{% elif outlook.attendance_impact == 'At Risk' %}#f87171{% else %}#fbbf24{% endif %};font-weight:700;">{{ outlook.attendance_impact }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span style="color:#64748b;font-size:.85rem;">Predicted Fail Count</span>
+            <span style="color:#f87171;font-weight:700;">{{ outlook.predicted_fail_count }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- PANEL 6: Subject Timeline View -->
+  {% if subject_timeline %}
+  <div class="card-dark mt-3">
+    <div class="section-title"><i class="bi bi-arrow-right-circle-fill me-1" style="color:#06b6d4;"></i>Subject Timeline</div>
+    {% for item in subject_timeline %}
+    <div style="margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #1e293b;">
+      <div style="font-weight:600;font-size:.875rem;color:#e2e8f0;margin-bottom:8px;">
+        {{ item.subject }}
+        <span class="trend-{{ item.trend }} ms-2" style="font-size:.75rem;">{{ item.trend_icon }} {{ item.trend|capfirst }}</span>
+      </div>
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        {% for point in item.timeline %}
+        <div style="text-align:center;">
+          <div style="font-size:.68rem;color:#475569;margin-bottom:3px;">{{ point.label }}</div>
+          <div style="background:{% if point.is_predicted %}#1e3a8a{% else %}#1e293b{% endif %};
+                      border:1.5px solid {% if point.is_predicted %}#3b82f6{% else %}#334155{% endif %};
+                      border-radius:8px;padding:6px 14px;font-weight:700;font-size:.875rem;
+                      color:{% if point.pct >= 75 %}#4ade80{% elif point.pct >= 40 %}#fbbf24{% else %}#f87171{% endif %};">
+            {{ point.pct }}%
+          </div>
+          {% if point.is_predicted %}<div style="font-size:.6rem;color:#3b82f6;margin-top:2px;text-align:center;">Predicted</div>{% endif %}
+        </div>
+        {% if not forloop.last %}
+        <i class="bi bi-arrow-right" style="color:#334155;font-size:.9rem;"></i>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div><!-- /new panels container -->
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.querySelectorAll('.confidence-fill').forEach(function(el) {
+    var pct = parseFloat(el.getAttribute('data-pct')) || 0;
+    el.style.width = Math.min(pct, 100) + '%';
+});
+
+// Analytics radar chart
+(function(){
+    var ctx = document.getElementById('analyticsChart');
+    if(!ctx) return;
+    new Chart(ctx.getContext('2d'), {
+        type: 'radar',
+        data: {
+            labels: ['Avg %', 'GPA x25', 'Attendance', 'Perf Score'],
+            datasets: [{
+                label: 'Student',
+                data: [
+                    {{ analytics.average_percentage|default:0 }},
+                    {{ analytics.gpa|default:0 }} * 25,
+                    {{ analytics.attendance_percentage|default:0 }},
+                    {{ analytics.performance_score|default:0 }}
+                ],
+                backgroundColor: 'rgba(56,189,248,0.15)',
+                borderColor: '#38bdf8',
+                pointBackgroundColor: '#38bdf8',
+                pointRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                r: {
+                    grid: { color: '#334155' },
+                    angleLines: { color: '#334155' },
+                    pointLabels: { color: '#64748b', font: { size: 10 } },
+                    ticks: { display: false },
+                    beginAtZero: true, max: 100
+                }
+            }
+        }
+    });
+})();
+
+// Predictions bar chart
+{% if predictions %}
+(function(){
+    var ctx = document.getElementById('predChart');
+    if(!ctx) return;
+    var labels=[], data=[], colors=[];
+    {% for pred in predictions %}
+        labels.push("{{ pred.subject|truncatechars:12 }}");
+        data.push({{ pred.predicted_percentage }});
+        colors.push({{ pred.predicted_percentage }} >= 75 ? 'rgba(74,222,128,0.8)' : {{ pred.predicted_percentage }} >= 50 ? 'rgba(250,204,21,0.8)' : 'rgba(248,113,113,0.8)');
+    {% endfor %}
+    new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: { labels: labels, datasets: [{ label: 'Predicted %', data: data, backgroundColor: colors, borderRadius: 5, borderSkipped: false }] },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e293b', titleColor: '#f1f5f9', bodyColor: '#94a3b8', padding: 10, cornerRadius: 8 } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#475569', font: { size: 10 } } },
+                y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#475569', font: { size: 10 } }, beginAtZero: true, max: 100 }
+            }
+        }
+    });
+})();
+{% endif %}
+
+// Outlook doughnut chart
+{% if outlook %}
+(function(){
+    var ctx = document.getElementById('outlookChart');
+    if(!ctx) return;
+    new Chart(ctx.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Predicted Pass', 'Predicted Fail'],
+            datasets: [{
+                data: [{{ outlook.predicted_pass_count }}, {{ outlook.predicted_fail_count }}],
+                backgroundColor: ['rgba(74,222,128,0.85)', 'rgba(248,113,113,0.85)'],
+                borderColor: ['#4ade80', '#f87171'],
+                borderWidth: 2, hoverOffset: 6
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false, cutout: '65%',
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11 }, padding: 12 } },
+                tooltip: { backgroundColor: '#1e293b', titleColor: '#f1f5f9', bodyColor: '#94a3b8' }
+            }
+        }
+    });
+})();
+{% endif %}
+</script>
+
+{% if not error and human_recs %}
+<!-- ═══════════════════════  SMART REPORT PANEL  ═══════════════════════ -->
+<div class="container pb-3">
+  <div class="card-dark mt-3" style="border:1.5px solid #1e40af;background:linear-gradient(135deg,#0f172a,#1e1b4b);">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+      <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:12px;padding:10px 14px;">
+        <i class="bi bi-lightbulb-fill" style="font-size:1.3rem;color:#fff;"></i>
+      </div>
+      <div>
+        <div style="font-size:1rem;font-weight:800;color:#e2e8f0;">Smart Performance Report</div>
+        <div style="font-size:.75rem;color:#475569;margin-top:2px;">Generated from your exam data, attendance and score trends</div>
+      </div>
+    </div>
+
+    <!-- Category -->
+    <div style="background:#0f172a;border:1.5px solid {% if human_recs.category.color == 'danger' %}rgba(239,68,68,.4){% elif human_recs.category.color == 'warning' %}rgba(245,158,11,.4){% else %}rgba(74,222,128,.4){% endif %};border-radius:12px;padding:16px 18px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <i class="bi {{ human_recs.category.icon }}" style="font-size:1.2rem;color:{% if human_recs.category.color == 'danger' %}#f87171{% elif human_recs.category.color == 'warning' %}#fbbf24{% else %}#4ade80{% endif %};"></i>
+        <span style="font-size:1rem;font-weight:800;color:{% if human_recs.category.color == 'danger' %}#f87171{% elif human_recs.category.color == 'warning' %}#fbbf24{% else %}#4ade80{% endif %};">{{ human_recs.category.name }}</span>
+      </div>
+      <p style="font-size:.875rem;color:#cbd5e1;line-height:1.65;margin:0;">{{ human_recs.category.meaning }}</p>
+    </div>
+
+    <!-- Why -->
+    <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#475569;font-weight:700;margin-bottom:8px;"><i class="bi bi-question-circle-fill me-1" style="color:#38bdf8;"></i>Why are you in this group?</div>
+      <p style="font-size:.875rem;color:#94a3b8;line-height:1.7;margin:0;">{{ human_recs.reason }}</p>
+    </div>
+
+    <!-- Next exam -->
+    {% if human_recs.next_exam.lr_avg_pred %}
+    <div style="background:rgba(30,64,175,.15);border:1px solid #1e40af;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#475569;font-weight:700;margin-bottom:8px;"><i class="bi bi-calendar-event-fill me-1" style="color:#a78bfa;"></i>Next Term Forecast</div>
+      <div class="row g-2">
+        <div class="col-6 col-md-3"><div style="background:#0f172a;border-radius:8px;padding:10px;text-align:center;"><div style="font-size:1.4rem;font-weight:800;color:#38bdf8;">{{ human_recs.next_exam.lr_avg_pred }}%</div><div style="font-size:.65rem;color:#475569;">Predicted Avg</div></div></div>
+        <div class="col-6 col-md-3"><div style="background:#0f172a;border-radius:8px;padding:10px;text-align:center;"><div style="font-size:1.4rem;font-weight:800;color:#4ade80;">{{ human_recs.next_exam.pass_count }}</div><div style="font-size:.65rem;color:#475569;">Pass</div></div></div>
+        <div class="col-6 col-md-3"><div style="background:#0f172a;border-radius:8px;padding:10px;text-align:center;"><div style="font-size:1.4rem;font-weight:800;color:#f87171;">{{ human_recs.next_exam.fail_count }}</div><div style="font-size:.65rem;color:#475569;">At Risk</div></div></div>
+        <div class="col-6 col-md-3"><div style="background:#0f172a;border-radius:8px;padding:10px;text-align:center;"><div style="font-size:1rem;font-weight:700;color:#fbbf24;">{{ human_recs.next_exam.worst_subject }}</div><div style="font-size:.65rem;color:#475569;">Weakest ({{ human_recs.next_exam.worst_pct }}%)</div></div></div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Subject breakdown from LR -->
+    {% if human_recs.subject_data %}
+    <div style="margin-bottom:16px;">
+      <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#475569;font-weight:700;margin-bottom:10px;"><i class="bi bi-table me-1" style="color:#38bdf8;"></i>Subject Trend Analysis</div>
+      {% for s in human_recs.subject_data %}
+      <div style="background:#0f172a;border:1px solid {% if s.is_failing %}rgba(239,68,68,.35){% elif s.trend == 'declining' %}rgba(245,158,11,.3){% elif s.trend == 'improving' %}rgba(74,222,128,.25){% else %}#1e293b{% endif %};border-radius:8px;padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div>
+          <span style="font-weight:700;color:#e2e8f0;font-size:.85rem;">{{ s.subject }}</span>
+          {% if s.anomaly %}<span style="background:rgba(239,68,68,.2);color:#f87171;padding:1px 7px;border-radius:4px;font-size:.6rem;font-weight:800;margin-left:6px;">⚡ ANOMALY {{ s.anomaly_direction|upper }} {{ s.anomaly_magnitude }}%</span>{% endif %}
+        </div>
+        <div style="display:flex;gap:12px;font-size:.75rem;flex-wrap:wrap;">
+          <span style="color:{% if s.predicted_pct >= 75 %}#4ade80{% elif s.predicted_pct >= 40 %}#fbbf24{% else %}#f87171{% endif %};font-weight:800;">{{ s.predicted_pct }}%</span>
+          <span style="color:{% if s.slope > 0 %}#4ade80{% elif s.slope < 0 %}#f87171{% else %}#94a3b8{% endif %};">slope {{ s.slope|floatformat:3 }}/term</span>
+          <span style="color:#64748b;">R²={{ s.r_squared }}</span>
+          <span style="color:{% if s.trend == 'improving' %}#4ade80{% elif s.trend == 'declining' %}#f87171{% else %}#fbbf24{% endif %};">{% if s.trend == 'improving' %}↑{% elif s.trend == 'declining' %}↓{% else %}→{% endif %} {{ s.trend }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- SHAP summary -->
+    {% if human_recs.shap_summary %}
+    <div style="background:#0f172a;border:1px solid #312e81;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#6366f1;font-weight:700;margin-bottom:8px;"><i class="bi bi-cpu-fill me-1"></i>Score Driver Analysis</div>
+      <p style="font-size:.83rem;color:#a5b4fc;margin-bottom:10px;">{{ human_recs.shap_summary.explanation }}</p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        {% for name, val in human_recs.shap_summary.attributions %}
+        <span style="background:rgba(99,102,241,.12);border:1px solid #312e81;color:#a5b4fc;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:600;">
+          {{ name }}: {% if val >= 0 %}+{% endif %}{{ val|floatformat:3 }}
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Peer comparison -->
+    {% if human_recs.peer_comparison %}
+    <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#38bdf8;font-weight:700;margin-bottom:8px;"><i class="bi bi-people-fill me-1"></i>Peer Comparison ({{ human_recs.peer_comparison.confidence|floatformat:2 }} similarity score)</div>
+      <p style="font-size:.83rem;color:#94a3b8;line-height:1.65;margin:0;">{{ human_recs.peer_comparison.message }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Study allocation -->
+    {% if human_recs.study_allocation %}
+    <div style="margin-bottom:10px;">
+      <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#475569;font-weight:700;margin-bottom:10px;"><i class="bi bi-clock-fill me-1" style="color:#a78bfa;"></i>Recommended Daily Study Time</div>
+      {% for alloc in human_recs.study_allocation %}
+      <div style="display:flex;align-items:center;justify-content:space-between;background:#0f172a;border-radius:7px;padding:7px 12px;margin-bottom:5px;">
+        <span style="font-size:.83rem;font-weight:600;color:#e2e8f0;">{{ alloc.subject }}</span>
+        <div style="display:flex;gap:10px;font-size:.75rem;">
+          <span style="color:#a78bfa;font-weight:700;">{{ alloc.minutes }} min/day</span>
+          <span style="color:{% if alloc.predicted_pct >= 75 %}#4ade80{% elif alloc.predicted_pct >= 40 %}#fbbf24{% else %}#f87171{% endif %};">{{ alloc.predicted_pct }}%</span>
+          <span style="color:{% if alloc.slope > 0 %}#4ade80{% else %}#f87171{% endif %};">{{ alloc.slope|floatformat:3 }}/term</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- All recommendations from services.py — verbatim, zero modification -->
+    {% if human_recs.recs_display %}
+    <div>
+      <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#475569;font-weight:700;margin-bottom:10px;"><i class="bi bi-card-list me-1" style="color:#fbbf24;"></i>Detailed Findings</div>
+      {% for rec in human_recs.recs_display %}
+      <div style="background:#0f172a;border:1px solid #1e40af;border-radius:10px;padding:14px 16px;margin-bottom:10px;">
+        <div style="font-weight:700;color:#93c5fd;font-size:.875rem;margin-bottom:6px;">{{ rec.title }}</div>
+        <div style="font-size:.83rem;color:#94a3b8;line-height:1.65;">{{ rec.message }}</div>
+        <div style="margin-top:8px;height:4px;background:#334155;border-radius:2px;overflow:hidden;"><div style="height:100%;background:linear-gradient(90deg,#6366f1,#06b6d4);width:{{ rec.conf_pct }}%;border-radius:2px;"></div></div>
+        <div style="font-size:.65rem;color:#475569;margin-top:3px;">Confidence: {{ rec.conf_pct }}%</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endif %}
+
+{% if not error and study_timetable and study_timetable.weekly_summary %}
+<!-- ═══════════════════════════════════════════════ MY STUDY TIMETABLE ══ -->
+<div class="container pb-5">
+  <div class="card-dark mt-3" style="border:1.5px solid #1e40af;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+      <div style="background:linear-gradient(135deg,#1d4ed8,#0ea5e9);border-radius:12px;padding:10px 14px;">
+        <i class="bi bi-calendar3-week-fill" style="font-size:1.2rem;color:#fff;"></i>
+      </div>
+      <div>
+        <div style="font-size:1rem;font-weight:800;color:#e2e8f0;">My Study Timetable</div>
+        <div style="font-size:.73rem;color:#475569;margin-top:2px;">
+          {{ study_timetable.total_daily_minutes }} minutes/day — time split based on your score trends per subject
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly summary bars -->
+    <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:#475569;font-weight:700;margin-bottom:10px;">
+      <i class="bi bi-bar-chart-fill me-1" style="color:#a78bfa;"></i>Weekly Allocation
+    </div>
+    <div style="margin-bottom:18px;">
+      {% for item in study_timetable.weekly_summary %}
+      <div style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span style="font-size:.83rem;font-weight:600;color:#e2e8f0;">{{ item.subject }}</span>
+            <span style="padding:1px 8px;border-radius:20px;font-size:.6rem;font-weight:800;
+              {% if item.priority == 'Critical Focus' %}background:rgba(239,68,68,.2);color:#f87171;
+              {% elif item.priority == 'Needs Work' %}background:rgba(245,158,11,.2);color:#fbbf24;
+              {% elif item.priority == 'Keep Going' %}background:rgba(74,222,128,.2);color:#4ade80;
+              {% else %}background:rgba(56,189,248,.2);color:#38bdf8;{% endif %}">
+              {{ item.priority }}
+            </span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;font-size:.75rem;">
+            <span style="color:
+              {% if item.predicted_pct >= 75 %}#4ade80{% elif item.predicted_pct >= 40 %}#fbbf24{% else %}#f87171{% endif %};
+              font-weight:700;">{{ item.predicted_pct }}%</span>
+            <span style="color:#a78bfa;font-weight:700;">{{ item.total_minutes }} min/wk</span>
+          </div>
+        </div>
+        {% with bar_w=item.total_minutes|floatformat:"0" %}
+        <div style="height:5px;background:#1e293b;border-radius:3px;overflow:hidden;">
+          <div style="height:100%;border-radius:3px;
+            {% if item.priority == 'Critical Focus' %}background:#ef4444;
+            {% elif item.priority == 'Needs Work' %}background:#f59e0b;
+            {% elif item.priority == 'Keep Going' %}background:#22c55e;
+            {% else %}background:#38bdf8;{% endif %}
+            width:{% widthratio item.total_minutes study_timetable.weekly_summary.0.total_minutes 100 %}%;">
+          </div>
+        </div>
+        {% endwith %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Day-by-day schedule -->
+    <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:#475569;font-weight:700;margin-bottom:10px;">
+      <i class="bi bi-grid-3x2-gap-fill me-1" style="color:#38bdf8;"></i>Daily Schedule (Mon–Sat)
+    </div>
+    <div id="ttGrid" style="overflow-x:auto;"></div>
+    <script>
+    (function(){
+      var DAYS = [{% for d in study_timetable.days %}"{{ d.day }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+      var SLOTS = [{% for d in study_timetable.days %}[{% for s in d.slots %}{"subj":"{{ s.subject|escapejs }}","min":{{ s.minutes }},"pct":{{ s.predicted_pct }},"pri":"{{ s.priority|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]{% if not forloop.last %},{% endif %}{% endfor %}];
+      var maxRows = Math.max.apply(null, SLOTS.map(function(s){return s.length;}));
+      var PC = {"Critical Focus":"#ef4444","Needs Work":"#f59e0b","Maintain":"#38bdf8","Keep Going":"#22c55e"};
+      var html = '<table style="width:100%;border-collapse:collapse;min-width:480px;">';
+      html += '<tr>';
+      DAYS.forEach(function(d){ html += '<th style="background:#0f172a;color:#475569;padding:6px 8px;text-align:center;border:1px solid #1e293b;font-size:.65rem;font-weight:800;">'+d.slice(0,3).toUpperCase()+'</th>'; });
+      html += '</tr>';
+      for(var r=0;r<maxRows;r++){
+        html += '<tr>';
+        for(var c=0;c<DAYS.length;c++){
+          var s=SLOTS[c][r];
+          if(s){
+            var col=PC[s.pri]||'#6366f1';
+            var pctCol=s.pct>=75?'#4ade80':s.pct>=40?'#fbbf24':'#f87171';
+            html += '<td style="padding:4px 5px;border:1px solid #1e293b;vertical-align:top;">';
+            html += '<div style="border-radius:7px;padding:6px 8px;background:'+col+'18;border:1px solid '+col+'44;">';
+            html += '<div style="font-size:.72rem;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;">'+s.subj+'</div>';
+            html += '<div style="font-size:.62rem;color:#94a3b8;">'+s.min+' min</div>';
+            html += '<div style="font-size:.58rem;font-weight:700;color:'+col+';">'+s.pri+'</div>';
+            html += '</div></td>';
+          } else {
+            html += '<td style="padding:4px 5px;border:1px solid #0f172a;background:#0a0f1e;"></td>';
+          }
+        }
+        html += '</tr>';
+      }
+      html += '</table>';
+      document.getElementById('ttGrid').innerHTML = html;
+    })();
+    </script>
+
+    <!-- Legend -->
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;">
+      <span style="font-size:.72rem;color:#f87171;"><span style="display:inline-block;width:10px;height:10px;background:#ef4444;border-radius:2px;margin-right:4px;"></span>Critical Focus</span>
+      <span style="font-size:.72rem;color:#fbbf24;"><span style="display:inline-block;width:10px;height:10px;background:#f59e0b;border-radius:2px;margin-right:4px;"></span>Needs Work</span>
+      <span style="font-size:.72rem;color:#38bdf8;"><span style="display:inline-block;width:10px;height:10px;background:#38bdf8;border-radius:2px;margin-right:4px;"></span>Maintain</span>
+      <span style="font-size:.72rem;color:#4ade80;"><span style="display:inline-block;width:10px;height:10px;background:#22c55e;border-radius:2px;margin-right:4px;"></span>Keep Going</span>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+</body>
+</html>

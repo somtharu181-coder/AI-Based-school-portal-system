@@ -1,0 +1,190 @@
+{% extends "accounts/base.html" %}
+
+{% block content %}
+
+<style>
+    .role-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+    }
+    .role-admin    { background: rgba(79,70,229,0.12); color: #4f46e5; }
+    .role-teacher  { background: rgba(245,158,11,0.12); color: #d97706; }
+    .role-student  { background: rgba(16,185,129,0.12); color: #059669; }
+    .role-staff    { background: rgba(6,182,212,0.12); color: #0891b2; }
+    .role-accountant { background: rgba(139,92,246,0.12); color: #7c3aed; }
+    .role-default  { background: rgba(100,116,139,0.12); color: #475569; }
+
+    .avatar-circle {
+        width: 36px; height: 36px; border-radius: 10px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 0.85rem; color: white; flex-shrink: 0;
+    }
+
+    .user-table-card {
+        background: white; border-radius: 14px; overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;
+    }
+
+    .user-table-card table thead th {
+        background: #f8fafc; font-size: 0.75rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.06em; color: #64748b;
+        padding: 14px 16px; border-bottom: 2px solid #e2e8f0; border-top: none;
+    }
+
+    .user-table-card table tbody td {
+        padding: 13px 16px; vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9; font-size: 0.875rem; color: #374151;
+    }
+
+    .user-table-card table tbody tr:last-child td { border-bottom: none; }
+    .user-table-card table tbody tr:hover { background: rgba(79,70,229,0.025); }
+
+    .search-input {
+        border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 9px 14px 9px 40px;
+        font-size: 0.875rem; width: 260px; transition: all 0.2s; background: #f8fafc;
+    }
+    .search-input:focus { outline: none; border-color: #4f46e5; background: white; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+    .search-wrapper { position: relative; }
+    .search-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem; }
+
+    .btn-action {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 600;
+        text-decoration: none; transition: all 0.2s; border: 1.5px solid transparent;
+    }
+    .btn-edit { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.25); }
+    .btn-edit:hover { background: #f59e0b; color: white; transform: translateY(-1px); }
+    .btn-delete { background: rgba(239,68,68,0.1); color: #dc2626; border-color: rgba(239,68,68,0.25); }
+    .btn-delete:hover { background: #ef4444; color: white; transform: translateY(-1px); }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; }
+    .empty-state i { font-size: 3rem; margin-bottom: 12px; display: block; }
+</style>
+
+<!-- Page Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 style="font-size:1.4rem; font-weight:700; color:#1e293b; margin:0;">User Management</h1>
+        <p style="font-size:0.85rem; color:#64748b; margin:3px 0 0;">Manage all system users and their roles</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'accounts:dashboard' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" style="border-radius:9px; font-size:0.82rem;">
+            <i class="bi bi-arrow-left"></i> Dashboard
+        </a>
+        <a href="{% url 'accounts:create_user' %}" class="btn btn-sm d-flex align-items-center gap-1" style="background:#4f46e5; color:white; border-radius:9px; font-size:0.82rem; border:none; padding:7px 14px;">
+            <i class="bi bi-person-plus-fill"></i> Create User
+        </a>
+    </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div class="search-wrapper">
+        <i class="bi bi-search"></i>
+        <input type="text" id="userSearch" class="search-input" placeholder="Search users...">
+    </div>
+    <div style="font-size:0.82rem; color:#94a3b8;">
+        <i class="bi bi-people"></i> <span id="userCount">{{ users|length }}</span> users
+    </div>
+</div>
+
+<!-- Table Card -->
+<div class="user-table-card">
+    <div class="table-responsive">
+        <table class="table mb-0" id="userTable">
+            <thead>
+                <tr>
+                    <th style="width:50px;">#</th>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Created</th>
+                    <th style="width:130px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr class="user-row">
+                    <td style="color:#94a3b8; font-size:0.8rem;">{{ user.id }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar-circle" style="background: linear-gradient(135deg,
+                                {% if user.role == 'admin' %}#4f46e5,#818cf8
+                                {% elif user.role == 'teacher' %}#f59e0b,#fbbf24
+                                {% elif user.role == 'student' %}#10b981,#34d399
+                                {% elif user.role == 'accountant' %}#8b5cf6,#a78bfa
+                                {% else %}#64748b,#94a3b8{% endif %});">
+                                {{ user.username|first|upper }}
+                            </div>
+                            <div>
+                                <div style="font-weight:600; color:#1e293b; font-size:0.875rem;">{{ user.username }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="role-badge
+                            {% if user.role == 'admin' %}role-admin
+                            {% elif user.role == 'teacher' %}role-teacher
+                            {% elif user.role == 'student' %}role-student
+                            {% elif user.role == 'accountant' %}role-accountant
+                            {% elif user.role == 'staff' %}role-staff
+                            {% else %}role-default{% endif %}">
+                            {% if user.role == 'admin' %}<i class="bi bi-shield-fill"></i>
+                            {% elif user.role == 'teacher' %}<i class="bi bi-person-badge"></i>
+                            {% elif user.role == 'student' %}<i class="bi bi-mortarboard"></i>
+                            {% elif user.role == 'accountant' %}<i class="bi bi-calculator"></i>
+                            {% else %}<i class="bi bi-person"></i>{% endif %}
+                            {{ user.role|capfirst }}
+                        </span>
+                    </td>
+                    <td style="color:#64748b; font-size:0.82rem;">{{ user.created_at }}</td>
+                    <td>
+                        <div class="d-flex gap-1 flex-wrap">
+                            <a href="{% url 'accounts:update_user' user.id %}" class="btn-action btn-edit">
+                                <i class="bi bi-pencil-fill"></i> Edit
+                            </a>
+                            {% if user.role != 'admin' or user == request.user %}
+                            <a href="{% url 'accounts:reset_user_password' user.id %}" class="btn-action" style="background:rgba(245,158,11,.1);color:#d97706;border:1.5px solid rgba(245,158,11,.25);" title="Reset Password">
+                                <i class="bi bi-key-fill"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'accounts:delete_user' user.id %}" class="btn-action btn-delete">
+                                <i class="bi bi-trash-fill"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <i class="bi bi-people"></i>
+                            <p style="font-size:0.95rem; font-weight:600; color:#475569;">No users found</p>
+                            <p style="font-size:0.82rem;">Create your first user to get started.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const searchInput = document.getElementById('userSearch');
+    const rows = document.querySelectorAll('.user-row');
+    const countEl = document.getElementById('userCount');
+
+    searchInput.addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        let visible = 0;
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const show = text.includes(q);
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        countEl.textContent = visible;
+    });
+</script>
+
+{% endblock %}

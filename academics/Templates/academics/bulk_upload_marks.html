@@ -1,0 +1,122 @@
+{% load static %}
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bulk Upload Marks</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;margin:0;}
+.ph{background:linear-gradient(135deg,#1e1b4b,#1e3a5f,#0f172a);padding:20px 32px;border-bottom:1px solid #1e40af;margin-bottom:24px;}
+.card-d{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:24px;margin-bottom:20px;}
+.sec-t{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:#475569;margin-bottom:12px;font-weight:700;}
+.inp{background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:8px;padding:9px 12px;font-size:.875rem;width:100%;}
+.inp:focus{outline:none;border-color:#4f46e5;}
+.inp option{background:#1e293b;}
+.back-btn{background:#1e293b;color:#94a3b8;border:1px solid #334155;padding:7px 16px;border-radius:9px;text-decoration:none;font-size:.82rem;}
+.back-btn:hover{background:#334155;color:white;}
+.upload-zone{border:2px dashed #334155;border-radius:12px;padding:32px;text-align:center;cursor:pointer;transition:.2s;}
+.upload-zone:hover{border-color:#4f46e5;background:rgba(79,70,229,.05);}
+.lbl{font-size:.8rem;color:#94a3b8;margin-bottom:6px;display:block;font-weight:600;}
+</style></head><body>
+<div class="ph d-flex align-items-center gap-3">
+  <a href="{% url 'accounts:dashboard' %}" class="back-btn"><i class="bi bi-arrow-left me-1"></i>Back</a>
+  <div>
+    <h4 style="margin:0;font-size:1.2rem;font-weight:800;color:white;"><i class="bi bi-cloud-upload-fill me-2" style="color:#fbbf24;"></i>Bulk Upload Marks</h4>
+    <p style="margin:0;font-size:.78rem;color:#475569;">Upload an Excel (.xlsx) file to enter marks for multiple students</p>
+  </div>
+</div>
+<div class="container pb-5" style="max-width:720px;">
+  {% for msg in messages %}<div class="alert alert-{% if msg.tags == 'error' %}danger{% elif msg.tags == 'warning' %}warning{% else %}success{% endif %} mb-3" style="border-radius:10px;">{{ msg }}</div>{% endfor %}
+
+  <!-- Format Info -->
+  <div class="card-d mb-4">
+    <div class="sec-t"><i class="bi bi-info-circle me-1" style="color:#38bdf8;"></i>Excel Format</div>
+    <p style="font-size:.875rem;color:#94a3b8;margin-bottom:8px;">Your <strong>.xlsx</strong> file must have these column headers in row 1:</p>
+    <code style="background:#0f172a;padding:8px 14px;border-radius:8px;display:block;color:#4ade80;font-size:.85rem;">{{ sample_headers }}</code>
+    <p style="font-size:.78rem;color:#64748b;margin-top:8px;">
+      <strong style="color:#94a3b8;">roll_number</strong> — student roll number in the selected section<br>
+      <strong style="color:#94a3b8;">subject</strong> — exact subject name (case-insensitive)<br>
+      <strong style="color:#94a3b8;">theory_marks</strong> — numeric<br>
+      <strong style="color:#94a3b8;">practical_marks</strong> — numeric (0 if none)
+    </p>
+  </div>
+
+  <div class="card-d">
+    <div class="sec-t"><i class="bi bi-upload me-1" style="color:#fbbf24;"></i>Upload File</div>
+    <form method="POST" enctype="multipart/form-data">{% csrf_token %}
+
+      <!-- Step 1: Class -->
+      <div class="mb-3">
+        <label class="lbl">Step 1 — Select Class</label>
+        <select class="inp" id="classSelect" name="class_id" onchange="filterSections(this.value)">
+          <option value="">-- Select Class --</option>
+          {% for cls in classes %}
+          <option value="{{ cls.id }}" {% if selected_class_id == cls.id|stringformat:"s" %}selected{% endif %}>{{ cls.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Step 2: Section -->
+      <div class="mb-3">
+        <label class="lbl">Step 2 — Select Section</label>
+        <select class="inp" id="sectionSelect" name="section_id" required>
+          <option value="">-- Select Class First --</option>
+          {% for sec in sections %}
+          <option value="{{ sec.id }}" data-class="{{ sec.class_obj.id }}">{{ sec.class_obj.name }} — Section {{ sec.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Exam Term -->
+      <div class="mb-3">
+        <label class="lbl">Exam Terms</label>
+        <select class="inp" name="term_id" required>
+          <option value="">-- Select Term --</option>
+          {% for term in exam_terms %}<option value="{{ term.id }}">{{ term.name }} ({{ term.academic_year.name }})</option>{% endfor %}
+        </select>
+      </div>
+
+      <!-- Excel File -->
+      <div class="mb-4">
+        <label class="lbl">Excel File (.xlsx)</label>
+        <div class="upload-zone" onclick="document.getElementById('excelMarks').click()">
+          <i class="bi bi-file-earmark-excel" style="font-size:2.5rem;color:#fbbf24;display:block;margin-bottom:8px;"></i>
+          <div style="font-size:.875rem;color:#94a3b8;">Click to select Excel file (.xlsx)</div>
+          <div id="fileName" style="font-size:.78rem;color:#fbbf24;margin-top:6px;font-weight:600;">No file selected</div>
+        </div>
+        <input type="file" id="excelMarks" name="excel_file" accept=".xlsx,.xls" style="display:none;"
+               onchange="document.getElementById('fileName').textContent=this.files[0]?.name||'No file selected'">
+      </div>
+
+      <button type="submit" style="background:#f59e0b;color:white;border:none;padding:11px 24px;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;width:100%;">
+        <i class="bi bi-cloud-upload me-2"></i>Upload &amp; Save Marks
+      </button>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+var allSections = [];
+document.querySelectorAll('#sectionSelect option[data-class]').forEach(function(opt){
+    allSections.push({value: opt.value, text: opt.textContent, classId: opt.getAttribute('data-class')});
+});
+
+function filterSections(classId) {
+    var sel = document.getElementById('sectionSelect');
+    sel.innerHTML = '<option value="">-- Select Section --</option>';
+    if (!classId) { sel.innerHTML = '<option value="">-- Select Class First --</option>'; return; }
+    allSections.filter(s => s.classId === classId).forEach(function(s){
+        var opt = document.createElement('option');
+        opt.value = s.value; opt.textContent = s.text;
+        sel.appendChild(opt);
+    });
+}
+
+(function(){
+    var classId = document.getElementById('classSelect').value;
+    if (classId) filterSections(classId);
+})();
+</script>
+</body></html>

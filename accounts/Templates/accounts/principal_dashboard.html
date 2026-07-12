@@ -1,0 +1,667 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Principal Dashboard — Scholaro ERP</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --sw:256px;--nh:64px;
+  --bg:#f1f5f9;--white:#fff;
+  --pp:#7c3aed;--pp-d:#5b21b6;--pp-l:#ede9fe;
+  --green:#10b981;--amber:#f59e0b;--red:#ef4444;--sky:#0891b2;--blue:#3b82f6;
+  --text:#1e293b;--muted:#64748b;--border:#e2e8f0;
+  --sh-sm:0 1px 3px rgba(0,0,0,.07);
+  --sh-md:0 4px 16px rgba(0,0,0,.08);
+  --sh-lg:0 10px 40px rgba(0,0,0,.12);
+  --tr:.2s cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
+
+/* ── Sidebar ── */
+.sb{width:var(--sw);background:linear-gradient(180deg,#2d1b69 0%,#1e1040 100%);height:100vh;position:fixed;left:0;top:0;z-index:300;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.3);}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.sb-logo{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sb-brand-text{font-size:.95rem;font-weight:700;color:#fff;line-height:1.2;}
+.sb-brand-text small{display:block;font-size:.65rem;color:rgba(196,181,253,.6);font-weight:400;}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 10px 8px;scrollbar-width:thin;scrollbar-color:#3b1d8c transparent;}
+.sb-nav::-webkit-scrollbar{width:3px;}
+.sb-nav::-webkit-scrollbar-thumb{background:#3b1d8c;border-radius:4px;}
+.sb-lbl{font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(196,181,253,.4);padding:10px 10px 4px;}
+.sb-link{display:flex;align-items:center;gap:9px;padding:8px 10px;margin-bottom:1px;color:rgba(255,255,255,.65);text-decoration:none;border-radius:9px;font-size:.85rem;font-weight:500;transition:var(--tr);}
+.sb-link:hover{background:rgba(124,58,237,.35);color:#fff;transform:translateX(3px);}
+.sb-link.active{background:rgba(124,58,237,.45);color:#fff;box-shadow:0 0 0 1px rgba(167,139,250,.35);}
+.sb-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.82rem;}
+.sb-foot{padding:12px 10px;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.sb-ucard{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.sb-av{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0;}
+.sb-uname{font-size:.8rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-urole{font-size:.62rem;color:rgba(196,181,253,.6);}
+
+/* ── Main ── */
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* ── Topbar ── */
+.topbar{height:var(--nh);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200;box-shadow:var(--sh-sm);}
+.topbar-title{font-size:1.1rem;font-weight:800;color:var(--text);margin:0;}
+.topbar-sub{font-size:.72rem;color:var(--muted);margin:0;}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-btn{width:36px;height:36px;border-radius:9px;border:1.5px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--tr);color:var(--muted);text-decoration:none;position:relative;}
+.tb-btn:hover{background:var(--pp-l);border-color:#c4b5fd;color:var(--pp);}
+.tb-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:.55rem;font-weight:800;border-radius:99px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid #fff;}
+.tb-user{display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:var(--tr);background:transparent;position:relative;}
+.tb-user:hover{background:#faf5ff;border-color:#c4b5fd;}
+.tb-user-av{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#fff;}
+.tb-uname{font-size:.82rem;font-weight:600;color:var(--text);}
+.tb-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh-lg);min-width:210px;padding:6px;z-index:500;display:none;}
+.tb-user:focus-within .tb-dropdown,.tb-dropdown:hover{display:block;}
+.tb-dd-head{padding:10px 12px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.tb-dd-name{font-size:.875rem;font-weight:700;color:var(--text);}
+.tb-dd-role{font-size:.7rem;background:var(--pp-l);color:var(--pp-d);padding:1px 7px;border-radius:4px;font-weight:600;display:inline-block;margin-top:3px;}
+.tb-dd-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:500;color:var(--text);transition:var(--tr);cursor:pointer;border:none;width:100%;background:transparent;font-family:'Inter',sans-serif;text-align:left;}
+.tb-dd-item:hover{background:#faf5ff;}
+.tb-dd-item.danger{color:var(--red);}
+.tb-dd-item.danger:hover{background:#fef2f2;}
+
+/* ── Content ── */
+.content{padding:26px 28px 48px;flex:1;}
+
+/* ── Hero ── */
+.hero{background:linear-gradient(135deg,#2d1b69 0%,#4c1d95 45%,#7c3aed 100%);border-radius:18px;padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden;box-shadow:0 10px 40px rgba(124,58,237,.35);}
+.hero::before{content:'';position:absolute;top:-60px;right:-60px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.05);}
+.hero::after{content:'';position:absolute;bottom:-80px;left:30%;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.03);}
+.hero-title{font-size:1.5rem;font-weight:800;color:#fff;margin:0 0 4px;position:relative;z-index:1;}
+.hero-sub{font-size:.83rem;color:rgba(255,255,255,.7);position:relative;z-index:1;margin:0;}
+.hero-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;position:relative;z-index:1;}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:600;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);}
+.chip.green{background:rgba(74,222,128,.15);border-color:rgba(74,222,128,.3);color:#4ade80;}
+.chip.amber{background:rgba(251,191,36,.15);border-color:rgba(251,191,36,.3);color:#fbbf24;}
+.chip.red{background:rgba(248,113,113,.15);border-color:rgba(248,113,113,.3);color:#f87171;}
+
+/* ── Stat grid ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+@media(max-width:1100px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 20px;box-shadow:var(--sh-sm);transition:var(--tr);}
+.stat-card:hover{box-shadow:var(--sh-md);transform:translateY(-3px);}
+.stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:12px;}
+.stat-val{font-size:1.75rem;font-weight:800;line-height:1;margin-bottom:3px;}
+.stat-lbl{font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+.stat-sub{font-size:.68rem;color:var(--muted);margin-top:4px;}
+.stat-bar{height:4px;background:#f1f5f9;border-radius:99px;overflow:hidden;margin-top:8px;}
+.stat-bar-fill{height:100%;border-radius:99px;}
+
+/* ── Section card ── */
+.sec-card{background:var(--white);border:1px solid var(--border);border-radius:14px;box-shadow:var(--sh-sm);margin-bottom:20px;overflow:hidden;transition:var(--tr);}
+.sec-card:hover{box-shadow:var(--sh-md);}
+.sec-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.sec-title{font-size:.9rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.sec-body{padding:18px 20px;}
+.sec-btn{background:rgba(124,58,237,.08);color:var(--pp);border:1px solid rgba(124,58,237,.2);border-radius:8px;padding:4px 12px;font-size:.72rem;text-decoration:none;font-weight:700;transition:var(--tr);}
+.sec-btn:hover{background:var(--pp);color:#fff;}
+
+/* ── Attendance ring ── */
+.att-ring-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.att-ring{flex-shrink:0;position:relative;width:90px;height:90px;}
+.att-ring svg{transform:rotate(-90deg);}
+.att-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.att-ring-pct{font-size:1.05rem;font-weight:800;color:var(--text);line-height:1;}
+.att-ring-sub{font-size:.55rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+.att-stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f8fafc;font-size:.82rem;}
+.att-stat-row:last-child{border-bottom:none;}
+
+/* ── Exam term table ── */
+.et-table{width:100%;border-collapse:collapse;font-size:.83rem;}
+.et-table thead th{background:#f8fafc;color:var(--muted);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:10px 14px;border-bottom:2px solid var(--border);}
+.et-table tbody td{padding:11px 14px;border-bottom:1px solid #f8fafc;color:var(--text);vertical-align:middle;}
+.et-table tbody tr:hover td{background:#faf5ff;}
+.published-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700;}
+.pub-yes{background:#dcfce7;color:#16a34a;}
+.pub-no{background:#fef3c7;color:#d97706;}
+
+/* ── Staff breakdown ── */
+.desig-bar{margin-bottom:10px;}
+.desig-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;font-size:.8rem;}
+.desig-track{height:6px;background:#f1f5f9;border-radius:99px;overflow:hidden;}
+.desig-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#7c3aed,#4f46e5);}
+
+/* ── Recent notifications ── */
+.notif-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f8fafc;}
+.notif-item:last-child{border-bottom:none;}
+.notif-icon{width:32px;height:32px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.82rem;}
+
+/* ── Quick actions ── */
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:1100px){.qa-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:640px){.qa-grid{grid-template-columns:repeat(2,1fr);}}
+.qa-item{display:flex;align-items:center;gap:9px;padding:11px 14px;border-radius:11px;text-decoration:none;font-size:.82rem;font-weight:600;transition:var(--tr);border:1.5px solid transparent;}
+.qa-item:hover{transform:translateY(-2px);box-shadow:var(--sh-md);}
+.qa-violet{background:rgba(124,58,237,.07);color:var(--pp-d);border-color:rgba(124,58,237,.2);}
+.qa-violet:hover{background:var(--pp);color:#fff;border-color:var(--pp);}
+.qa-green{background:rgba(16,185,129,.07);color:#065f46;border-color:rgba(16,185,129,.2);}
+.qa-green:hover{background:#10b981;color:#fff;border-color:#10b981;}
+.qa-amber{background:rgba(245,158,11,.07);color:#92400e;border-color:rgba(245,158,11,.2);}
+.qa-amber:hover{background:#f59e0b;color:#fff;border-color:#f59e0b;}
+.qa-blue{background:rgba(59,130,246,.07);color:#1d4ed8;border-color:rgba(59,130,246,.2);}
+.qa-blue:hover{background:#3b82f6;color:#fff;border-color:#3b82f6;}
+.qa-dark{background:rgba(30,41,59,.07);color:#1e293b;border-color:rgba(30,41,59,.2);}
+.qa-dark:hover{background:#1e293b;color:#fff;border-color:#1e293b;}
+.qa-rose{background:rgba(225,29,72,.07);color:#9f1239;border-color:rgba(225,29,72,.2);}
+.qa-rose:hover{background:#e11d48;color:#fff;border-color:#e11d48;}
+.qa-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0;}
+
+/* ── Permission notice ── */
+.perm-notice{background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.2);border-left:4px solid var(--pp);border-radius:10px;padding:12px 16px;font-size:.78rem;color:var(--pp-d);display:flex;align-items:flex-start;gap:10px;margin-bottom:20px;}
+
+/* ── Chart container ── */
+.chart-wrap{position:relative;height:220px;}
+
+/* ── Empty ── */
+.empty-st{text-align:center;padding:28px 16px;color:var(--muted);}
+.empty-st i{font-size:1.8rem;display:block;margin-bottom:8px;opacity:.3;}
+.empty-st p{font-size:.82rem;margin:0;}
+
+@media(max-width:768px){.sb{transform:translateX(-100%);}.main{margin-left:0;}.content{padding:16px;}}
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ─────────────────────────────────────────── -->
+<aside class="sb">
+  <div class="sb-brand">
+    <div class="sb-logo"><i class="bi bi-shield-fill-check" style="color:#fff;font-size:1rem;"></i></div>
+    <div class="sb-brand-text">Scholaro ERP<small>Principal Portal</small></div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-lbl">Overview</div>
+    <a href="{% url 'accounts:principal_dashboard' %}" class="sb-link active">
+      <div class="sb-icon" style="background:rgba(124,58,237,.25);"><i class="bi bi-speedometer2" style="color:#c4b5fd;"></i></div>Dashboard
+    </a>
+
+    <div class="sb-lbl">School</div>
+    <a href="{% url 'students:student_list' %}" class="sb-link">
+      <div class="sb-icon" style="background:rgba(16,185,129,.2);"><i class="bi bi-mortarboard-fill" style="color:#6ee7b7;"></i></div>Students
+    </a>
+    <a href="{% url 'staff:staff_list' %}" class="sb-link">
+      <div class="sb-icon" style="background:rgba(245,158,11,.2);"><i class="bi bi-person-badge-fill" style="color:#fcd34d;"></i></div>Staff
+    </a>
+    <a href="{% url 'attendance:student_attendance_list' %}" class="sb-link">
+      <div class="sb-icon" style="background:rgba(16,185,129,.2);"><i class="bi bi-calendar-check-fill" style="color:#6ee7b7;"></i></div>Attendance
+    </a>
+
+    <div class="sb-lbl">Academic</div>
+    <a href="{% url 'academics:academic_dashboard' %}" class="sb-link">
+      <div class="sb-icon" style="background:rgba(139,92,246,.2);"><i class="bi bi-book-fill" style="color:#c4b5fd;"></i></div>Academics
+    </a>
+    <a href="{% url 'academics:exam_term_list' %}" class="sb-link">
+      <div class="sb-icon" style="background:rgba(6,182,212,.2);"><i class="bi bi-journal-bookmark-fill" style="color:#67e8f9;"></i></div>Exam Terms
+    </a>
+    <a href="{% url 'reporting_system:reporting_dashboard' %}" class="sb-link">
+      <div class="sb-icon" style="background:rgba(234,179,8,.2);"><i class="bi bi-file-earmark-bar-graph" style="color:#fde047;"></i></div>Reports
+    </a>
+    <a href="{% url 'analytics:principal_analytics' %}" class="sb-link">
+      <div class="sb-icon" style="background:rgba(236,72,153,.2);"><i class="bi bi-robot" style="color:#f9a8d4;"></i></div>AI Analytics
+    </a>
+
+    <div class="sb-lbl">Communication</div>
+    <a href="{% url 'notifications:send' %}" class="sb-link">
+      <div class="sb-icon" style="background:rgba(99,102,241,.2);"><i class="bi bi-bell-fill" style="color:#a5b4fc;"></i></div>Notifications
+      {% if unread and unread > 0 %}<span style="margin-left:auto;background:#ef4444;color:#fff;font-size:.6rem;font-weight:800;border-radius:99px;padding:1px 6px;">{{ unread }}</span>{% endif %}
+    </a>
+    <a href="{% url 'parent_portal:create_meeting' %}" class="sb-link">
+      <div class="sb-icon" style="background:rgba(6,182,212,.2);"><i class="bi bi-camera-video-fill" style="color:#67e8f9;"></i></div>Schedule Meeting
+    </a>
+    <a href="{% url 'parent_portal:publish_letter' %}" class="sb-link">
+      <div class="sb-icon" style="background:rgba(251,191,36,.18);"><i class="bi bi-envelope-paper-fill" style="color:#fcd34d;"></i></div>Publish Letter
+    </a>
+    <a href="{% url 'notifications:inbox' %}" class="sb-link">
+      <div class="sb-icon" style="background:rgba(74,222,128,.15);"><i class="bi bi-inbox-fill" style="color:#4ade80;"></i></div>Inbox
+    </a>
+
+    <div class="sb-lbl">Account</div>
+    <a href="{% url 'accounts:change_credentials' %}" class="sb-link">
+      <div class="sb-icon" style="background:rgba(100,116,139,.2);"><i class="bi bi-gear-fill" style="color:#94a3b8;"></i></div>Settings
+    </a>
+  </nav>
+
+  <div class="sb-foot">
+    <div class="sb-ucard">
+      <div class="sb-av">{{ request.user.get_full_name|default:request.user.username|first|upper }}</div>
+      <div>
+        <div class="sb-uname">{{ request.user.get_full_name|default:request.user.username }}</div>
+        <div class="sb-urole">Principal</div>
+      </div>
+    </div>
+    <form method="POST" action="{% url 'accounts:logout' %}">
+      {% csrf_token %}
+      <button type="submit" style="width:100%;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:9px;padding:8px;font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:'Inter',sans-serif;transition:all .2s;"
+              onmouseover="this.style.background='rgba(239,68,68,.22)'"
+              onmouseout="this.style.background='rgba(239,68,68,.12)'">
+        <i class="bi bi-box-arrow-right"></i> Logout
+      </button>
+    </form>
+  </div>
+</aside>
+
+<!-- ── MAIN ──────────────────────────────────────────────── -->
+<div class="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div>
+      <div class="topbar-title">Principal Dashboard</div>
+      <div class="topbar-sub">School-wide overview &nbsp;&middot;&nbsp; {{ today }}</div>
+    </div>
+    <div class="tb-right">
+      <a href="{% url 'notifications:inbox' %}" class="tb-btn">
+        <i class="bi bi-bell-fill" style="font-size:.9rem;"></i>
+        {% if unread and unread > 0 %}<span class="tb-badge">{{ unread }}</span>{% endif %}
+      </a>
+      <a href="{% url 'analytics:principal_analytics' %}" class="tb-btn" title="AI Analytics">
+        <i class="bi bi-robot" style="font-size:.9rem;"></i>
+      </a>
+      <div class="tb-user" tabindex="0">
+        <div class="tb-user-av">{{ request.user.get_full_name|default:request.user.username|first|upper }}</div>
+        <span class="tb-uname d-none d-md-block">{{ request.user.username }}</span>
+        <i class="bi bi-chevron-down" style="font-size:.65rem;color:#94a3b8;"></i>
+        <div class="tb-dropdown">
+          <div class="tb-dd-head">
+            <div class="tb-dd-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+            <span class="tb-dd-role">Principal</span>
+          </div>
+          {% if staff_profile %}<div style="padding:6px 12px 8px;font-size:.75rem;color:var(--muted);">{{ staff_profile.staff_id }} &nbsp;&middot;&nbsp; {% if staff_profile.department %}{{ staff_profile.department }}{% endif %}</div>{% endif %}
+          <a href="{% url 'accounts:change_credentials' %}" class="tb-dd-item"><i class="bi bi-shield-lock" style="color:#7c3aed;"></i> Security Settings</a>
+          <div style="height:1px;background:#f1f5f9;margin:4px 0;"></div>
+          <form method="POST" action="{% url 'accounts:logout' %}" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="tb-dd-item danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- Permission notice -->
+    <div class="perm-notice">
+      <i class="bi bi-shield-fill-check" style="font-size:1.1rem;flex-shrink:0;margin-top:1px;"></i>
+      <div>
+        <strong>Principal Access Level</strong> — You have read access to all school data and management rights over communications, exam terms, and analytics. Data entry operations (marks, bulk uploads, user creation) are reserved for administrators and teachers.
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+          <p class="hero-title"><i class="bi bi-shield-fill-check me-2" style="color:#c4b5fd;"></i>Welcome, {{ request.user.get_full_name|default:request.user.username }}</p>
+          {% if staff_profile %}
+          <p class="hero-sub">Principal &nbsp;&middot;&nbsp; {% if staff_profile.department %}{{ staff_profile.department }} &nbsp;&middot;&nbsp; {% endif %}{{ staff_profile.staff_id }}</p>
+          <div class="hero-chips">
+            {% if current_year %}<span class="chip"><i class="bi bi-calendar2-range"></i>{{ current_year.name }}</span>{% endif %}
+            <span class="chip {% if attendance_pct_today >= 75 %}green{% elif attendance_pct_today >= 50 %}amber{% else %}red{% endif %}">
+              <i class="bi bi-people-fill"></i>Today: {{ attendance_pct_today }}% present
+            </span>
+            <span class="chip {% if unpublished_terms > 0 %}amber{% else %}green{% endif %}">
+              <i class="bi bi-journal-bookmark"></i>{{ unpublished_terms }} term{{ unpublished_terms|pluralize }} pending publish
+            </span>
+          </div>
+          {% else %}
+          <p class="hero-sub">Principal Dashboard — School management overview</p>
+          {% endif %}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;position:relative;z-index:1;">
+          {% if current_year %}
+          <div style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 16px;text-align:center;">
+            <div style="font-size:1.5rem;font-weight:800;color:#fff;line-height:1;">{{ total_students }}</div>
+            <div style="font-size:.65rem;color:rgba(255,255,255,.6);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Active Students</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Stat bar -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#ede9fe;"><i class="bi bi-mortarboard-fill" style="color:#7c3aed;"></i></div>
+        <div class="stat-val js-countup" style="color:#7c3aed;" data-target="{{ total_students }}">{{ total_students }}</div>
+        <div class="stat-lbl">Active Students</div>
+        <div class="stat-sub">{{ total_classes }} class{{ total_classes|pluralize }} &middot; {{ total_sections }} section{{ total_sections|pluralize }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fef3c7;"><i class="bi bi-person-badge-fill" style="color:#d97706;"></i></div>
+        <div class="stat-val js-countup" style="color:#d97706;" data-target="{{ total_staff }}">{{ total_staff }}</div>
+        <div class="stat-lbl">Staff Members</div>
+        <div class="stat-sub">Active teachers &amp; administration</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:{% if attendance_pct_today >= 75 %}#d1fae5{% else %}#fee2e2{% endif %};"><i class="bi bi-calendar-check-fill" style="color:{% if attendance_pct_today >= 75 %}#059669{% else %}#dc2626{% endif %};"></i></div>
+        <div class="stat-val" style="color:{% if attendance_pct_today >= 75 %}#059669{% else %}#dc2626{% endif %};">{{ attendance_pct_today }}%</div>
+        <div class="stat-lbl">Student Attendance Today</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:{{ attendance_pct_today }}%;background:{% if attendance_pct_today >= 75 %}#10b981{% else %}#ef4444{% endif %};"></div></div>
+        <div class="stat-sub">{{ students_present_today }} present &middot; {{ students_absent_today }} absent</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e0e7ff;"><i class="bi bi-journal-bookmark-fill" style="color:#4338ca;"></i></div>
+        <div class="stat-val" style="color:#4338ca;">{{ published_terms }}/{{ published_terms|add:unpublished_terms }}</div>
+        <div class="stat-lbl">Exam Terms Published</div>
+        <div class="stat-sub">{{ unpublished_terms }} pending &middot; Click to manage</div>
+      </div>
+    </div>
+
+    <!-- Main grid -->
+    <div class="row g-4 mb-4">
+
+      <!-- Left: Attendance detail + Staff today -->
+      <div class="col-xl-4 col-lg-5">
+
+        <div class="sec-card">
+          <div class="sec-head">
+            <div class="sec-title"><i class="bi bi-clipboard2-pulse-fill" style="color:#7c3aed;"></i> Today's Attendance</div>
+            <a href="{% url 'attendance:student_attendance_list' %}" class="sec-btn">View All</a>
+          </div>
+          <div class="sec-body">
+            <div class="att-ring-wrap">
+              <div class="att-ring">
+                <svg width="90" height="90" viewBox="0 0 90 90">
+                  <circle cx="45" cy="45" r="35" fill="none" stroke="#f1f5f9" stroke-width="10"/>
+                  <circle cx="45" cy="45" r="35" fill="none"
+                    stroke="{% if attendance_pct_today >= 75 %}#7c3aed{% else %}#ef4444{% endif %}"
+                    stroke-width="10" stroke-linecap="round"
+                    stroke-dasharray="219.9"
+                    style="stroke-dashoffset:calc(219.9 - (219.9 * {{ attendance_pct_today }} / 100));"/>
+                </svg>
+                <div class="att-ring-center">
+                  <span class="att-ring-pct">{{ attendance_pct_today }}%</span>
+                  <span class="att-ring-sub">today</span>
+                </div>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div class="att-stat-row">
+                  <span style="color:var(--muted);display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#10b981;display:inline-block;"></span>Present</span>
+                  <strong style="color:#10b981;">{{ students_present_today }}</strong>
+                </div>
+                <div class="att-stat-row">
+                  <span style="color:var(--muted);display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;"></span>Absent</span>
+                  <strong style="color:#ef4444;">{{ students_absent_today }}</strong>
+                </div>
+                <div class="att-stat-row">
+                  <span style="color:var(--muted);">Total Marked</span>
+                  <strong>{{ students_total_today }}</strong>
+                </div>
+                <div class="att-stat-row">
+                  <span style="color:var(--muted);">Staff Present</span>
+                  <strong style="color:#7c3aed;">{{ staff_present_today }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Class-wise student count -->
+        <div class="sec-card">
+          <div class="sec-head">
+            <div class="sec-title"><i class="bi bi-building-fill" style="color:#0891b2;"></i> Students by Class</div>
+            <a href="{% url 'students:student_list' %}" class="sec-btn">View All</a>
+          </div>
+          <div class="sec-body" style="padding:12px 16px;">
+            {% for cls in class_stats %}
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f8fafc;font-size:.83rem;">
+              <span style="font-weight:600;color:var(--text);">{{ cls.name }}</span>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:80px;height:5px;background:#f1f5f9;border-radius:99px;overflow:hidden;">
+                  <div style="height:100%;background:linear-gradient(90deg,#7c3aed,#4f46e5);border-radius:99px;width:{% if total_students %}{% widthratio cls.count total_students 100 %}{% else %}0{% endif %}%;"></div>
+                </div>
+                <span style="font-weight:700;color:#7c3aed;min-width:24px;text-align:right;">{{ cls.count }}</span>
+              </div>
+            </div>
+            {% empty %}
+            <div class="empty-st"><i class="bi bi-building"></i><p>No classes found.</p></div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Staff by designation -->
+        <div class="sec-card">
+          <div class="sec-head">
+            <div class="sec-title"><i class="bi bi-people-fill" style="color:#d97706;"></i> Staff Breakdown</div>
+            <a href="{% url 'staff:staff_list' %}" class="sec-btn">View All</a>
+          </div>
+          <div class="sec-body">
+            {% for desig, count in staff_by_desig.items %}
+            <div class="desig-bar">
+              <div class="desig-row">
+                <span style="color:var(--muted);text-transform:capitalize;">{{ desig|title|cut:"_" }}</span>
+                <span style="font-weight:700;color:var(--text);">{{ count }}</span>
+              </div>
+              <div class="desig-track">
+                <div class="desig-fill" style="width:{% if total_staff %}{% widthratio count total_staff 100 %}{% else %}0{% endif %}%;"></div>
+              </div>
+            </div>
+            {% empty %}
+            <div class="empty-st"><i class="bi bi-person-x"></i><p>No staff data.</p></div>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div><!-- /col left -->
+
+      <!-- Right: Exam terms + Chart + Notifications -->
+      <div class="col-xl-8 col-lg-7">
+
+        <!-- Exam Terms management -->
+        <div class="sec-card">
+          <div class="sec-head">
+            <div class="sec-title"><i class="bi bi-journal-bookmark-fill" style="color:#4338ca;"></i> Exam Terms</div>
+            <div class="d-flex gap-2">
+              <span style="background:#dcfce7;color:#16a34a;padding:3px 9px;border-radius:20px;font-size:.7rem;font-weight:700;">{{ published_terms }} Published</span>
+              {% if unpublished_terms > 0 %}
+              <span style="background:#fef3c7;color:#d97706;padding:3px 9px;border-radius:20px;font-size:.7rem;font-weight:700;">{{ unpublished_terms }} Pending</span>
+              {% endif %}
+              <a href="{% url 'academics:exam_term_list' %}" class="sec-btn">Manage</a>
+            </div>
+          </div>
+          {% if exam_terms %}
+          <div style="overflow-x:auto;">
+            <table class="et-table">
+              <thead><tr><th>Term</th><th>Academic Year</th><th>Period</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>
+                {% for term in exam_terms %}
+                <tr>
+                  <td><span style="font-weight:700;">{{ term.name }}</span><div style="font-size:.7rem;color:var(--muted);">{{ term.get_term_type_display }}</div></td>
+                  <td style="color:var(--muted);font-size:.8rem;">{{ term.academic_year.name }}</td>
+                  <td style="font-size:.78rem;color:var(--muted);">{{ term.start_date|date:"d M" }} – {{ term.end_date|date:"d M Y" }}</td>
+                  <td>
+                    {% if term.is_published %}
+                    <span class="published-badge pub-yes"><i class="bi bi-check-circle-fill"></i> Published</span>
+                    {% else %}
+                    <span class="published-badge pub-no"><i class="bi bi-clock-fill"></i> Pending</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <form method="POST" action="{% url 'academics:toggle_exam_term_status' term.pk %}" style="margin:0;display:inline;">
+                      {% csrf_token %}
+                      <button type="submit" style="background:{% if term.is_published %}rgba(239,68,68,.08){% else %}rgba(124,58,237,.08){% endif %};color:{% if term.is_published %}#dc2626{% else %}#7c3aed{% endif %};border:1px solid {% if term.is_published %}rgba(239,68,68,.2){% else %}rgba(124,58,237,.2){% endif %};border-radius:6px;padding:3px 10px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;"
+                              onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
+                        {% if term.is_published %}Unpublish{% else %}Publish{% endif %}
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="empty-st"><i class="bi bi-journal-x"></i><p>No exam terms found.</p></div>
+          {% endif %}
+        </div>
+
+        <!-- Chart: Student distribution by class -->
+        <div class="sec-card">
+          <div class="sec-head">
+            <div class="sec-title"><i class="bi bi-bar-chart-fill" style="color:#7c3aed;"></i> Student Distribution</div>
+            <span style="font-size:.72rem;color:var(--muted);">by class</span>
+          </div>
+          <div class="sec-body">
+            <div class="chart-wrap"><canvas id="classChart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Recent Notifications -->
+        <div class="sec-card">
+          <div class="sec-head">
+            <div class="sec-title"><i class="bi bi-bell-fill" style="color:#7c3aed;"></i> Recent Notifications</div>
+            <div class="d-flex gap-2 align-items-center">
+              {% if unread and unread > 0 %}
+              <span style="background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:700;">{{ unread }} unread</span>
+              {% endif %}
+              <a href="{% url 'notifications:send' %}" class="sec-btn"><i class="bi bi-send-fill me-1"></i>Compose</a>
+            </div>
+          </div>
+          <div class="sec-body">
+            {% if recent_notifs %}
+            {% for n in recent_notifs %}
+            <div class="notif-item">
+              <div class="notif-icon" style="background:{% if n.category == 'parent' %}rgba(74,222,128,.1){% elif n.category == 'internal' %}rgba(99,102,241,.1){% else %}rgba(245,158,11,.1){% endif %};">
+                <i class="bi {% if n.category == 'parent' %}bi-house-heart-fill{% elif n.category == 'internal' %}bi-people-fill{% else %}bi-shield-fill{% endif %}"
+                   style="color:{% if n.category == 'parent' %}#4ade80{% elif n.category == 'internal' %}#a5b4fc{% else %}#fbbf24{% endif %};font-size:.82rem;"></i>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:.85rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ n.title }}</div>
+                <div style="font-size:.7rem;color:var(--muted);">
+                  {{ n.sender.get_full_name|default:n.sender.username|default:"System" }} &middot; {{ n.created_at|timesince }} ago
+                </div>
+              </div>
+              <span style="font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;
+                background:{% if n.priority == 'urgent' %}rgba(239,68,68,.1){% elif n.priority == 'high' %}rgba(251,146,60,.1){% elif n.priority == 'medium' %}rgba(251,191,36,.1){% else %}rgba(74,222,128,.1){% endif %};
+                color:{% if n.priority == 'urgent' %}#ef4444{% elif n.priority == 'high' %}#fb923c{% elif n.priority == 'medium' %}#ca8a04{% else %}#16a34a{% endif %};">
+                {{ n.get_priority_display }}
+              </span>
+            </div>
+            {% endfor %}
+            <a href="{% url 'notifications:inbox' %}" style="display:block;margin-top:12px;text-align:center;font-size:.75rem;color:#7c3aed;font-weight:600;text-decoration:none;padding:7px;background:rgba(124,58,237,.06);border-radius:8px;border:1px solid rgba(124,58,237,.14);">
+              <i class="bi bi-arrow-right me-1"></i>View All Notifications
+            </a>
+            {% else %}
+            <div class="empty-st"><i class="bi bi-bell-slash"></i><p>No notifications sent yet.</p></div>
+            {% endif %}
+          </div>
+        </div>
+
+      </div><!-- /col right -->
+    </div>
+
+    <!-- Academic Years -->
+    <div class="sec-card mb-4">
+      <div class="sec-head">
+        <div class="sec-title"><i class="bi bi-calendar2-range-fill" style="color:#0891b2;"></i> Academic Years</div>
+        <a href="{% url 'academics:create_academic_year' %}" class="sec-btn">+ New</a>
+      </div>
+      <div class="sec-body" style="padding:0;">
+        <div class="d-flex flex-wrap gap-0">
+          {% for yr in academic_years %}
+          <div style="padding:14px 20px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);flex:1;min-width:180px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <span style="font-weight:800;font-size:.95rem;color:var(--text);">{{ yr.name }}</span>
+              {% if yr.is_current %}
+              <span style="background:#dcfce7;color:#16a34a;padding:1px 7px;border-radius:20px;font-size:.62rem;font-weight:700;">Current</span>
+              {% else %}
+              <span style="background:#f1f5f9;color:var(--muted);padding:1px 7px;border-radius:20px;font-size:.62rem;font-weight:600;">Past</span>
+              {% endif %}
+            </div>
+            <div style="font-size:.72rem;color:var(--muted);">{{ yr.start_date|date:"d M Y" }} → {{ yr.end_date|date:"d M Y" }}</div>
+          </div>
+          {% empty %}
+          <div class="sec-body"><div class="empty-st"><i class="bi bi-calendar-x"></i><p>No academic years configured.</p></div></div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <div class="sec-title"><i class="bi bi-lightning-charge-fill" style="color:#f59e0b;"></i> Quick Actions</div>
+      </div>
+      <div class="sec-body">
+        <div class="qa-grid">
+          <a href="{% url 'analytics:principal_analytics' %}" class="qa-item qa-violet"><div class="qa-icon" style="background:rgba(124,58,237,.12);"><i class="bi bi-robot" style="color:#7c3aed;"></i></div>AI Analytics</a>
+          <a href="{% url 'academics:exam_term_list' %}" class="qa-item qa-blue"><div class="qa-icon" style="background:rgba(59,130,246,.12);"><i class="bi bi-journal-bookmark-fill" style="color:#1d4ed8;"></i></div>Exam Terms</a>
+          <a href="{% url 'notifications:send' %}" class="qa-item qa-violet"><div class="qa-icon" style="background:rgba(124,58,237,.12);"><i class="bi bi-send-fill" style="color:#7c3aed;"></i></div>Send Notification</a>
+          <a href="{% url 'parent_portal:create_meeting' %}" class="qa-item qa-blue"><div class="qa-icon" style="background:rgba(59,130,246,.12);"><i class="bi bi-camera-video-fill" style="color:#1d4ed8;"></i></div>Schedule Meeting</a>
+          <a href="{% url 'parent_portal:publish_letter' %}" class="qa-item qa-amber"><div class="qa-icon" style="background:rgba(245,158,11,.12);"><i class="bi bi-envelope-paper-fill" style="color:#d97706;"></i></div>Publish Letter</a>
+          <a href="{% url 'students:student_list' %}" class="qa-item qa-green"><div class="qa-icon" style="background:rgba(16,185,129,.12);"><i class="bi bi-mortarboard-fill" style="color:#059669;"></i></div>View Students</a>
+          <a href="{% url 'staff:staff_list' %}" class="qa-item qa-amber"><div class="qa-icon" style="background:rgba(245,158,11,.12);"><i class="bi bi-person-badge-fill" style="color:#d97706;"></i></div>View Staff</a>
+          <a href="{% url 'attendance:student_attendance_list' %}" class="qa-item qa-green"><div class="qa-icon" style="background:rgba(16,185,129,.12);"><i class="bi bi-calendar-check-fill" style="color:#059669;"></i></div>Attendance</a>
+          <a href="{% url 'reporting_system:reporting_dashboard' %}" class="qa-item qa-dark"><div class="qa-icon" style="background:rgba(30,41,59,.12);"><i class="bi bi-file-earmark-bar-graph" style="color:#1e293b;"></i></div>Reports</a>
+          <a href="{% url 'reporting_system:student_results' %}" class="qa-item qa-blue"><div class="qa-icon" style="background:rgba(59,130,246,.12);"><i class="bi bi-award-fill" style="color:#1d4ed8;"></i></div>View Results</a>
+          <a href="{% url 'academics:academic_dashboard' %}" class="qa-item qa-dark"><div class="qa-icon" style="background:rgba(30,41,59,.12);"><i class="bi bi-book-fill" style="color:#1e293b;"></i></div>Academics</a>
+          <a href="{% url 'accounts:change_credentials' %}" class="qa-item qa-violet"><div class="qa-icon" style="background:rgba(124,58,237,.12);"><i class="bi bi-shield-lock-fill" style="color:#7c3aed;"></i></div>Security</a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ── Student distribution chart ── */
+(function(){
+  var ctx = document.getElementById('classChart');
+  if(!ctx) return;
+  var labels = [{% for c in class_stats %}"{{ c.name }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+  var data   = [{% for c in class_stats %}{{ c.count }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  var colors = labels.map(function(_,i){
+    var palette=['#7c3aed','#4f46e5','#0891b2','#059669','#d97706','#e11d48','#6366f1','#10b981'];
+    return palette[i % palette.length];
+  });
+  new Chart(ctx.getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:labels,
+      datasets:[{
+        label:'Students',
+        data:data,
+        backgroundColor:colors.map(function(c){return c+'cc';}),
+        borderRadius:8,
+        borderSkipped:false,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#1e1b4b',titleColor:'#f1f5f9',bodyColor:'#a5b4fc',padding:12,cornerRadius:8}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#64748b',font:{size:11}}},
+        y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#64748b',font:{size:11}},beginAtZero:true}
+      }
+    }
+  });
+})();
+
+/* ── Count-up on stat values ── */
+document.querySelectorAll('.js-countup').forEach(function(el){
+  var target = parseInt(el.getAttribute('data-target')||el.textContent, 10);
+  if(isNaN(target)||target===0) return;
+  var steps=40,step=0;
+  var t=setInterval(function(){
+    step++;
+    el.textContent=Math.round(target*step/steps);
+    if(step>=steps){el.textContent=target;clearInterval(t);}
+  },800/steps);
+});
+</script>
+</body>
+</html>

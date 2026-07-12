@@ -1,0 +1,38 @@
+{% extends "accounts/base.html" %}
+
+{% block content %}
+
+<div style="max-width:600px;margin:0 auto;">
+    <div style="background:white;border-radius:18px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.09);border:1px solid #e2e8f0;">
+
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#1e1b4b,#312e81,#4f46e5);padding:26px 30px;color:white;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+                <h3 style="font-size:1.3rem;font-weight:800;margin:0;"><i class="bi bi-person-plus-fill me-2"></i>Create User</h3>
+                <small style="opacity:.8;font-size:.85rem;">Add a new system user account</small>
+            </div>
+            <a href="{% url 'accounts:user_list' %}" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:7px 16px;font-size:.82rem;text-decoration:none;">
+                <i class="bi bi-arrow-left me-1"></i>Back to Users
+            </a>
+        </div>
+
+        <!-- Form Body -->
+        <div style="padding:30px;">
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="d-flex gap-3 mt-3">
+                    <button type="submit" style="background:linear-gradient(135deg,#4f46e5,#6366f1);color:white;border:none;border-radius:10px;padding:12px 24px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;flex:1;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(79,70,229,.4)';" onmouseout="this.style.transform='';this.style.boxShadow='';">
+                        <i class="bi bi-check-lg me-1"></i>Create User
+                    </button>
+                    <a href="{% url 'accounts:user_list' %}" style="background:#f1f5f9;color:#64748b;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 24px;font-size:.9rem;font-weight:600;text-decoration:none;display:inline-block;text-align:center;flex:1;">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

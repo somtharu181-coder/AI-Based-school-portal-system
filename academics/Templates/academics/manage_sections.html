@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manage Sections — Scholaro ERP</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;margin:0;}
+.ph{background:linear-gradient(135deg,#1e1b4b,#1e3a5f,#0f172a);padding:20px 32px;border-bottom:1px solid #1e40af;margin-bottom:24px;}
+.card-d{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px;margin-bottom:20px;}
+.sec-t{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:#475569;margin-bottom:12px;font-weight:700;}
+.tbl th{background:#0f172a;color:#64748b;font-size:.72rem;text-transform:uppercase;border-color:#334155;}
+.tbl td{border-color:#334155;vertical-align:middle;font-size:.875rem;}
+.btn-sm-act{padding:4px 10px;border-radius:6px;font-size:.72rem;font-weight:600;border:none;cursor:pointer;}
+.inp{background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:8px;padding:8px 12px;font-size:.875rem;width:100%;}
+.inp:focus{outline:none;border-color:#4f46e5;}
+.back-btn{background:#1e293b;color:#94a3b8;border:1px solid #334155;padding:7px 16px;border-radius:9px;text-decoration:none;font-size:.82rem;}
+.back-btn:hover{background:#334155;color:white;}
+.modal-dark .modal-content{background:#1e293b;border:1px solid #334155;border-radius:14px;color:#e2e8f0;}
+.modal-dark .modal-header{border-bottom:1px solid #334155;}
+.modal-dark .btn-close{filter:invert(1);}
+</style></head><body>
+<div class="ph d-flex align-items-center gap-3">
+  <a href="{% url 'accounts:dashboard' %}" class="back-btn"><i class="bi bi-arrow-left me-1"></i>Back</a>
+  <div>
+    <h4 style="margin:0;font-size:1.2rem;font-weight:800;color:white;"><i class="bi bi-grid-3x3-gap-fill me-2" style="color:#a5b4fc;"></i>Manage Sections</h4>
+    <p style="margin:0;font-size:.78rem;color:#475569;">Create, rename, and delete sections</p>
+  </div>
+</div>
+<div class="container pb-5">
+  {% for msg in messages %}<div class="alert alert-{% if msg.tags == 'error' %}danger{% elif msg.tags == 'warning' %}warning{% else %}success{% endif %} mb-3" style="border-radius:10px;">{{ msg }}</div>{% endfor %}
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card-d">
+        <div class="sec-t"><i class="bi bi-plus-circle me-1" style="color:#4ade80;"></i>Add New Section</div>
+        <form method="POST">{% csrf_token %}<input type="hidden" name="action" value="create">
+          <div class="mb-3"><label style="font-size:.8rem;color:#94a3b8;margin-bottom:4px;display:block;">Class</label>
+            <select class="inp" name="class_obj" required>
+              <option value="">-- Select Class --</option>
+              {% for cls in classes %}<option value="{{ cls.id }}">{{ cls.name }}</option>{% endfor %}
+            </select></div>
+          <div class="mb-3"><label style="font-size:.8rem;color:#94a3b8;margin-bottom:4px;display:block;">Section Name</label>
+            <input class="inp" name="name" placeholder="e.g. A, B, Red" required></div>
+          <button type="submit" style="background:#4f46e5;color:white;border:none;padding:9px 20px;border-radius:8px;font-size:.875rem;font-weight:600;cursor:pointer;width:100%;">
+            <i class="bi bi-plus-circle me-1"></i>Section Add</button>
+        </form>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <div class="card-d">
+        <div class="sec-t"><i class="bi bi-list-ul me-1" style="color:#38bdf8;"></i>All Sections ({{ sections|length }})</div>
+        {% if sections %}
+        <div class="table-responsive">
+          <table class="table table-dark tbl mb-0">
+            <thead><tr><th>#</th><th>ID</th><th>Class</th><th>Section</th><th>Actions</th></tr></thead>
+            <tbody>
+            {% for sec in sections %}
+            <tr>
+              <td style="color:#475569;">{{ forloop.counter }}</td>
+              <td><code style="color:#a78bfa;font-size:.75rem;">{{ sec.id }}</code></td>
+              <td style="color:#94a3b8;">{{ sec.class_obj.name }}</td>
+              <td style="font-weight:600;color:#e2e8f0;">{{ sec.name }}</td>
+              <td>
+                <button class="btn-sm-act" style="background:rgba(99,102,241,.2);color:#a5b4fc;"
+                  data-bs-toggle="modal" data-bs-target="#renameSecModal{{ sec.id }}">
+                  <i class="bi bi-pencil"></i> Rename
+                </button>
+                <form method="POST" style="display:inline;" onsubmit="return confirm('Delete section {{ sec.name }} from {{ sec.class_obj.name }}?');">
+                  {% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="pk" value="{{ sec.id }}">
+                  <button type="submit" class="btn-sm-act ms-1" style="background:rgba(248,113,113,.2);color:#f87171;">
+                    <i class="bi bi-trash"></i> Delete
+                  </button>
+                </form>
+              </td>
+            </tr>
+            <div class="modal fade" id="renameSecModal{{ sec.id }}" tabindex="-1">
+              <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content modal-dark">
+                  <div class="modal-header"><h6 class="modal-title">Rename Section</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                  <div class="modal-body">
+                    <form method="POST">{% csrf_token %}<input type="hidden" name="action" value="rename"><input type="hidden" name="pk" value="{{ sec.id }}">
+                      <input class="inp mb-3" name="name" value="{{ sec.name }}" required>
+                      <button type="submit" style="background:#4f46e5;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:.875rem;font-weight:600;cursor:pointer;width:100%;">Save</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}<p style="color:#475569;">No sections yet.</p>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body></html>

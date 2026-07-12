@@ -1,0 +1,301 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+:root{--nc-surface:#1e293b;--nc-deep:#0f172a;--nc-border:#334155;--nc-text:#e2e8f0;--nc-muted:#64748b;--nc-muted2:#94a3b8;--nc-indigo:#6366f1;--nc-green:#4ade80;--nc-amber:#fbbf24;--nc-red:#f87171;--nc-blue:#38bdf8;--nc-radius:14px;--nc-radius-s:8px;--nc-trans:all .18s cubic-bezier(.4,0,.2,1);}
+.nc-wrap{max-width:860px;margin:0 auto;}
+.nc-card{background:var(--nc-surface);border:1px solid var(--nc-border);border-radius:var(--nc-radius);margin-bottom:18px;overflow:hidden;}
+.nc-card-head{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--nc-border);font-size:.82rem;font-weight:700;color:var(--nc-text);}
+.nc-card-head-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.82rem;flex-shrink:0;}
+.nc-card-body{padding:20px;}
+.nc-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--nc-muted2);margin-bottom:7px;display:flex;align-items:center;gap:6px;}
+.nc-input{background:var(--nc-deep);border:1.5px solid var(--nc-border);color:var(--nc-text);border-radius:var(--nc-radius-s);padding:10px 14px;font-size:.875rem;width:100%;font-family:inherit;transition:var(--nc-trans);}
+.nc-input:focus{outline:none;border-color:var(--nc-indigo);box-shadow:0 0 0 3px rgba(99,102,241,.15);}
+.nc-textarea{resize:vertical;min-height:200px;line-height:1.7;}
+.nc-aud-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:4px;}
+.nc-aud-tile{position:relative;cursor:pointer;}
+.nc-aud-tile input[type="checkbox"]{position:absolute;opacity:0;width:0;height:0;}
+.nc-aud-tile-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;background:var(--nc-deep);border:1.5px solid var(--nc-border);border-radius:10px;padding:13px 8px;text-align:center;transition:var(--nc-trans);user-select:none;}
+.nc-aud-tile input:checked + .nc-aud-tile-inner{border-color:var(--nc-indigo);background:rgba(99,102,241,.12);box-shadow:0 0 0 2px rgba(99,102,241,.25);}
+.nc-aud-tile-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.9rem;}
+.nc-aud-tile-lbl{font-size:.7rem;font-weight:700;color:var(--nc-muted2);}
+.nc-aud-tile input:checked + .nc-aud-tile-inner .nc-aud-tile-lbl{color:#c7d2fe;}
+.nc-target-section{display:none;background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.2);border-radius:var(--nc-radius-s);padding:14px 16px;margin-top:14px;}
+.nc-target-section.visible{display:block;}
+.nc-staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px;max-height:200px;overflow-y:auto;padding:2px;}
+.nc-staff-row{display:flex;align-items:center;gap:8px;background:var(--nc-deep);border:1px solid var(--nc-border);border-radius:7px;padding:8px 10px;cursor:pointer;transition:var(--nc-trans);font-size:.8rem;}
+.nc-staff-row:hover{border-color:var(--nc-indigo);}
+.nc-staff-row.checked{border-color:var(--nc-indigo);background:rgba(99,102,241,.1);}
+.nc-notify-toggle{display:flex;align-items:center;gap:12px;background:var(--nc-deep);border:1.5px solid var(--nc-border);border-radius:var(--nc-radius-s);padding:12px 16px;cursor:pointer;transition:var(--nc-trans);margin-bottom:14px;}
+.nc-toggle-sw{position:relative;width:42px;height:24px;flex-shrink:0;}
+.nc-toggle-sw input{opacity:0;width:0;height:0;}
+.nc-toggle-sw .slider{position:absolute;inset:0;background:#334155;border-radius:24px;transition:.3s;}
+.nc-toggle-sw .slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#64748b;border-radius:50%;transition:.3s;}
+.nc-toggle-sw input:checked + .slider{background:var(--nc-amber);}
+.nc-toggle-sw input:checked + .slider::before{transform:translateX(18px);background:#fff;}
+.nc-submit-btn{width:100%;padding:13px 24px;background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;border:none;border-radius:var(--nc-radius-s);font-size:.95rem;font-weight:800;cursor:pointer;transition:var(--nc-trans);display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;}
+.nc-submit-btn:hover{box-shadow:0 6px 20px rgba(245,158,11,.45);transform:translateY(-1px);}
+.nc-char-count{font-size:.68rem;color:var(--nc-muted);text-align:right;margin-top:4px;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:#334155;border-radius:3px;}
+</style>
+
+<div class="nc-wrap">
+
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px;">
+    <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <i class="bi bi-envelope-paper-fill" style="color:#fff;font-size:1.2rem;"></i>
+    </div>
+    <div>
+      <div style="font-size:1.3rem;font-weight:800;color:#1e293b;">Publish School Letter</div>
+      <div style="font-size:.82rem;color:var(--text-secondary);">Compose an official letter and send it to specific audiences</div>
+    </div>
+  </div>
+
+  {% for msg in messages %}
+  <div class="alert alert-{% if msg.tags == 'error' %}danger{% else %}success{% endif %} mb-3">{{ msg }}</div>
+  {% endfor %}
+
+  <form method="POST" id="letterForm">
+    {% csrf_token %}
+    <div class="row g-4">
+
+      <!-- LEFT: letter content -->
+      <div class="col-lg-7">
+
+        <div class="nc-card">
+          <div class="nc-card-head">
+            <div class="nc-card-head-icon" style="background:rgba(245,158,11,.18);">
+              <i class="bi bi-pencil-square" style="color:#fbbf24;"></i>
+            </div>
+            Letter Content
+          </div>
+          <div class="nc-card-body">
+            <div class="mb-3">
+              <label class="nc-label" for="ltitle"><i class="bi bi-type-h1"></i> Subject / Title <span style="color:#f87171;">*</span></label>
+              <input type="text" class="nc-input" id="ltitle" name="title"
+                     placeholder="e.g. Annual Sports Day — Permission Slip" required>
+            </div>
+            <div>
+              <label class="nc-label" for="lbody"><i class="bi bi-body-text"></i> Letter Body <span style="color:#f87171;">*</span></label>
+              <textarea class="nc-input nc-textarea" id="lbody" name="body"
+                        placeholder="Dear Parent / Guardian,&#10;&#10;We are pleased to inform you…"
+                        required oninput="updateCount(this)"></textarea>
+              <div class="nc-char-count" id="charCount">0 characters</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="nc-card">
+          <div class="nc-card-head">
+            <div class="nc-card-head-icon" style="background:rgba(74,222,128,.12);">
+              <i class="bi bi-eye" style="color:#4ade80;"></i>
+            </div>
+            Letter Preview
+          </div>
+          <div class="nc-card-body">
+            <div id="letterPreview"
+                 style="background:var(--nc-deep);border:1px solid var(--nc-border);border-radius:var(--nc-radius-s);padding:20px;min-height:120px;font-size:.875rem;color:var(--nc-muted2);line-height:1.8;white-space:pre-wrap;">
+              <span style="color:#334155;font-style:italic;">Start writing to see a preview…</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /col-lg-7 -->
+
+      <!-- RIGHT: audience + notification -->
+      <div class="col-lg-5">
+
+        <div class="nc-card">
+          <div class="nc-card-head">
+            <div class="nc-card-head-icon" style="background:rgba(251,191,36,.15);">
+              <i class="bi bi-people-fill" style="color:#fbbf24;"></i>
+            </div>
+            Recipients
+          </div>
+          <div class="nc-card-body">
+
+            <div class="nc-label mb-3"><i class="bi bi-toggles"></i> Who receives this letter?</div>
+            <div class="nc-aud-grid">
+
+              <label class="nc-aud-tile">
+                <input type="checkbox" name="audience_types" value="parents" id="aud_parents" onchange="audienceChanged()" checked>
+                <div class="nc-aud-tile-inner">
+                  <div class="nc-aud-tile-icon" style="background:rgba(74,222,128,.15);">
+                    <i class="bi bi-house-heart-fill" style="color:#4ade80;"></i>
+                  </div>
+                  <div class="nc-aud-tile-lbl">Parents</div>
+                </div>
+              </label>
+
+              <label class="nc-aud-tile">
+                <input type="checkbox" name="audience_types" value="students" id="aud_students" onchange="audienceChanged()">
+                <div class="nc-aud-tile-inner">
+                  <div class="nc-aud-tile-icon" style="background:rgba(56,189,248,.15);">
+                    <i class="bi bi-mortarboard-fill" style="color:#38bdf8;"></i>
+                  </div>
+                  <div class="nc-aud-tile-lbl">Students</div>
+                </div>
+              </label>
+
+              <label class="nc-aud-tile">
+                <input type="checkbox" name="audience_types" value="teachers" id="aud_teachers" onchange="audienceChanged()">
+                <div class="nc-aud-tile-inner">
+                  <div class="nc-aud-tile-icon" style="background:rgba(167,139,250,.15);">
+                    <i class="bi bi-person-badge-fill" style="color:#a78bfa;"></i>
+                  </div>
+                  <div class="nc-aud-tile-lbl">Teachers</div>
+                </div>
+              </label>
+
+              <label class="nc-aud-tile">
+                <input type="checkbox" name="audience_types" value="committee" id="aud_committee" onchange="audienceChanged()">
+                <div class="nc-aud-tile-inner">
+                  <div class="nc-aud-tile-icon" style="background:rgba(245,158,11,.15);">
+                    <i class="bi bi-shield-fill-check" style="color:#fbbf24;"></i>
+                  </div>
+                  <div class="nc-aud-tile-lbl">Committee</div>
+                </div>
+              </label>
+
+              <label class="nc-aud-tile">
+                <input type="checkbox" name="audience_types" value="all_staff" id="aud_all_staff" onchange="audienceChanged()">
+                <div class="nc-aud-tile-inner">
+                  <div class="nc-aud-tile-icon" style="background:rgba(99,102,241,.15);">
+                    <i class="bi bi-people-fill" style="color:#a5b4fc;"></i>
+                  </div>
+                  <div class="nc-aud-tile-lbl">All Staff</div>
+                </div>
+              </label>
+
+            </div>
+
+            <!-- Class / Section filter -->
+            <div class="nc-target-section visible" id="classFilterSection">
+              <div class="nc-label mb-2">
+                <i class="bi bi-funnel"></i> Filter by Class / Section
+                <span style="color:var(--nc-muted);font-weight:400;font-size:.68rem;">(optional)</span>
+              </div>
+              <div class="mb-2">
+                <select name="target_class" class="nc-input" id="classSelect"
+                        onchange="onClassChange(this.value)">
+                  <option value="">All Classes</option>
+                  {% for cls in classes %}
+                  <option value="{{ cls.id }}">{{ cls.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <select name="target_section" class="nc-input" id="sectionSelect">
+                <option value="">All Sections</option>
+              </select>
+            </div>
+
+            <!-- Teacher picker -->
+            <div class="nc-target-section" id="teacherPickerSection">
+              <div class="nc-label mb-2">
+                <i class="bi bi-person-check"></i> Pick Specific Teachers
+              </div>
+              <input type="text" class="nc-input mb-2" placeholder="Search…"
+                     oninput="filterStaff(this.value)"
+                     style="font-size:.8rem;padding:7px 12px;">
+              <div class="nc-staff-grid" id="staffGrid">
+                {% for s in staff_list %}
+                <label class="nc-staff-row" onclick="toggleStaffRow(this)">
+                  <input type="checkbox" name="specific_staff" value="{{ s.pk }}" style="pointer-events:none;">
+                  <div style="min-width:0;">
+                    <div style="font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                      {{ s.user.get_full_name|default:s.user.username }}
+                    </div>
+                    <div style="font-size:.68rem;color:#64748b;">{{ s.get_designation_display }}</div>
+                  </div>
+                </label>
+                {% empty %}
+                <p style="color:#475569;font-size:.8rem;grid-column:1/-1;">No staff found.</p>
+                {% endfor %}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Notify toggle -->
+        <div class="nc-card">
+          <div class="nc-card-head">
+            <div class="nc-card-head-icon" style="background:rgba(251,191,36,.15);">
+              <i class="bi bi-bell-fill" style="color:#fbbf24;"></i>
+            </div>
+            In-App Notification
+          </div>
+          <div class="nc-card-body">
+            <label class="nc-notify-toggle">
+              <div class="nc-toggle-sw">
+                <input type="checkbox" name="send_notification" value="1" id="notifyToggle" checked>
+                <div class="slider"></div>
+              </div>
+              <div>
+                <div style="font-size:.85rem;font-weight:700;color:#e2e8f0;">Notify recipients</div>
+                <div style="font-size:.72rem;color:#64748b;">
+                  Send an in-app notification about this letter to selected audience
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="nc-submit-btn">
+          <i class="bi bi-envelope-paper-fill"></i>
+          Publish Letter
+        </button>
+
+      </div><!-- /col-lg-5 -->
+    </div>
+  </form>
+</div>
+
+<script>
+var SECTIONS_BY_CLASS = {{ sections_json|safe }};
+
+function audienceChanged() {
+  var parents  = document.getElementById('aud_parents').checked;
+  var students = document.getElementById('aud_students').checked;
+  var teachers = document.getElementById('aud_teachers').checked;
+  document.getElementById('classFilterSection').classList.toggle('visible', parents || students);
+  document.getElementById('teacherPickerSection').classList.toggle('visible', teachers);
+}
+
+function onClassChange(classId) {
+  var sel = document.getElementById('sectionSelect');
+  sel.innerHTML = '<option value="">All Sections</option>';
+  (SECTIONS_BY_CLASS[classId] || []).forEach(function(s){
+    var o = document.createElement('option');
+    o.value = s.id; o.textContent = s.name; sel.appendChild(o);
+  });
+}
+
+function toggleStaffRow(row) {
+  var cb = row.querySelector('input[type="checkbox"]');
+  cb.checked = !cb.checked;
+  row.classList.toggle('checked', cb.checked);
+}
+
+function filterStaff(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('.nc-staff-row').forEach(function(r){
+    r.style.display = (!q || r.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  });
+}
+
+function updateCount(el) {
+  document.getElementById('charCount').textContent = el.value.length + ' characters';
+  var prev = document.getElementById('letterPreview');
+  prev.textContent = el.value || '';
+  if (!el.value) {
+    prev.innerHTML = '<span style="color:#334155;font-style:italic;">Start writing to see a preview…</span>';
+  }
+}
+
+// init: parents tile already checked by default
+document.addEventListener('DOMContentLoaded', function(){ audienceChanged(); });
+</script>
+{% endblock %}

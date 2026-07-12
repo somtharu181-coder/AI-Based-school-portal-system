@@ -1,0 +1,628 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Staff Dashboard — Scholaro ERP</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sw:256px;--nh:64px;
+  --bg:#f1f5f9;--white:#fff;
+  --green:#10b981;--green-d:#065f46;
+  --blue:#3b82f6;--amber:#f59e0b;--red:#ef4444;--violet:#8b5cf6;
+  --text:#1e293b;--muted:#64748b;--border:#e2e8f0;
+  --sh-sm:0 1px 3px rgba(0,0,0,.07);
+  --sh-md:0 4px 16px rgba(0,0,0,.08);
+  --sh-lg:0 10px 40px rgba(0,0,0,.12);
+  --tr:.18s cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
+
+/* ── Sidebar ── */
+.sb{width:var(--sw);background:linear-gradient(180deg,#1e1b4b 0%,#16133a 100%);height:100vh;position:fixed;left:0;top:0;z-index:300;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.25);}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.sb-logo{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sb-brand-text{font-size:.95rem;font-weight:700;color:#fff;line-height:1.2;}
+.sb-brand-text small{display:block;font-size:.65rem;color:rgba(165,180,252,.6);font-weight:400;}
+.sb-nav{flex:1;overflow-y:auto;padding:12px 10px 8px;scrollbar-width:thin;scrollbar-color:#334155 transparent;}
+.sb-nav::-webkit-scrollbar{width:4px;}
+.sb-nav::-webkit-scrollbar-thumb{background:#334155;border-radius:4px;}
+.sb-section-lbl{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(165,180,252,.4);padding:12px 10px 5px;}
+.sb-link{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-bottom:1px;color:rgba(255,255,255,.65);text-decoration:none;border-radius:9px;font-size:.85rem;font-weight:500;transition:var(--tr);}
+.sb-link:hover{background:rgba(16,185,129,.25);color:#fff;transform:translateX(3px);}
+.sb-link.active{background:rgba(16,185,129,.35);color:#fff;}
+.sb-link-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.82rem;}
+.sb-badge{margin-left:auto;background:#ef4444;color:#fff;font-size:.6rem;font-weight:800;border-radius:99px;padding:1px 6px;}
+.sb-foot{padding:12px 10px;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.sb-user-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.sb-avatar{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0;}
+.sb-user-name{font-size:.8rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-user-role{font-size:.65rem;color:rgba(165,180,252,.6);}
+
+/* ── Main ── */
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;}
+
+/* ── Topbar ── */
+.topbar{height:var(--nh);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100;box-shadow:var(--sh-sm);}
+.topbar-left h1{font-size:1.1rem;font-weight:800;color:var(--text);margin:0;}
+.topbar-left p{font-size:.72rem;color:var(--muted);margin:0;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.tb-btn{width:36px;height:36px;border-radius:9px;border:1.5px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--tr);color:var(--muted);text-decoration:none;position:relative;}
+.tb-btn:hover{background:#ecfdf5;border-color:#a7f3d0;color:#059669;}
+.tb-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:.55rem;font-weight:800;border-radius:99px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid #fff;}
+.tb-user{display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:var(--tr);background:transparent;position:relative;}
+.tb-user:hover{background:#f0fdf4;border-color:#a7f3d0;}
+.tb-user-av{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#fff;}
+.tb-user-name{font-size:.82rem;font-weight:600;color:var(--text);}
+.tb-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh-lg);min-width:200px;padding:6px;z-index:200;display:none;}
+.tb-user:focus-within .tb-dropdown,.tb-dropdown:hover{display:block;}
+.tb-dd-header{padding:10px 12px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.tb-dd-name{font-size:.875rem;font-weight:700;color:var(--text);}
+.tb-dd-role{font-size:.7rem;background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:4px;font-weight:600;display:inline-block;margin-top:3px;}
+.tb-dd-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:500;color:var(--text);transition:var(--tr);}
+.tb-dd-item:hover{background:#f0fdf4;}
+.tb-dd-item.danger{color:var(--red);}
+.tb-dd-item.danger:hover{background:#fef2f2;}
+
+/* ── Content ── */
+.content{padding:24px 28px 48px;flex:1;}
+
+/* ── Hero Banner ── */
+.hero{background:linear-gradient(135deg,#064e3b 0%,#065f46 50%,#059669 100%);border-radius:18px;padding:24px 28px;margin-bottom:24px;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(5,150,105,.3);}
+.hero::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.05);}
+.hero::after{content:'';position:absolute;bottom:-60px;left:35%;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.03);}
+.hero-name{font-size:1.45rem;font-weight:800;color:#fff;margin:0 0 3px;position:relative;z-index:1;}
+.hero-sub{font-size:.82rem;color:rgba(255,255,255,.7);position:relative;z-index:1;margin:0;}
+.hero-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;position:relative;z-index:1;}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:600;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);}
+.att-badge{padding:5px 14px;border-radius:20px;font-size:.75rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;}
+.att-present{background:rgba(74,222,128,.2);color:#4ade80;border:1px solid rgba(74,222,128,.3);}
+.att-absent{background:rgba(248,113,113,.2);color:#f87171;border:1px solid rgba(248,113,113,.3);}
+.att-late{background:rgba(251,191,36,.2);color:#fbbf24;border:1px solid rgba(251,191,36,.3);}
+.att-none{background:rgba(148,163,184,.2);color:#94a3b8;border:1px solid rgba(148,163,184,.3);}
+
+/* ── Stat tiles ── */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+@media(max-width:1024px){.stat-row{grid-template-columns:repeat(2,1fr);}}
+.tile{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 20px;box-shadow:var(--sh-sm);transition:var(--tr);}
+.tile:hover{box-shadow:var(--sh-md);transform:translateY(-3px);}
+.tile-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:10px;}
+.tile-num{font-size:1.8rem;font-weight:800;line-height:1;}
+.tile-lbl{font-size:.72rem;color:var(--muted);font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.04em;}
+
+/* ── Cards ── */
+.card-s{background:var(--white);border:1px solid var(--border);border-radius:14px;box-shadow:var(--sh-sm);overflow:hidden;}
+.card-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:.9rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;}
+.card-body{padding:16px 20px;}
+.card-btn{background:rgba(79,70,229,.08);color:#4f46e5;border:1px solid rgba(79,70,229,.2);border-radius:8px;padding:4px 12px;font-size:.72rem;text-decoration:none;font-weight:700;transition:var(--tr);}
+.card-btn:hover{background:#4f46e5;color:#fff;}
+
+/* ── Today timetable rows ── */
+.routine-item{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:var(--tr);}
+.routine-item:hover{border-color:#a5b4fc;background:#fafbff;}
+.routine-item:last-child{margin-bottom:0;}
+.time-pill{background:#e0e7ff;color:#4f46e5;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700;white-space:nowrap;flex-shrink:0;}
+.section-badge{background:rgba(79,70,229,.08);color:#4f46e5;padding:2px 9px;border-radius:6px;font-size:.72rem;font-weight:700;}
+
+/* ── Assignments ── */
+.asgn-item{background:#fafbff;border:1px solid var(--border);border-radius:10px;padding:11px 14px;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;gap:10px;transition:var(--tr);}
+.asgn-item:hover{border-color:#a5b4fc;}
+.due-badge{padding:2px 9px;border-radius:20px;font-size:.68rem;font-weight:700;}
+.due-over{background:#fee2e2;color:#dc2626;}
+.due-today{background:#fef3c7;color:#d97706;}
+.due-soon{background:#dbeafe;color:#1d4ed8;}
+
+/* ── Table ── */
+.table-s{width:100%;border-collapse:collapse;font-size:.85rem;}
+.table-s thead th{background:#f8fafc;color:var(--muted);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:10px 14px;border-bottom:2px solid var(--border);}
+.table-s tbody td{padding:10px 14px;vertical-align:middle;border-bottom:1px solid #f8fafc;color:var(--text);}
+.table-s tbody tr:hover td{background:#fafbff;}
+
+/* ── AI Recs ── */
+.rec-card{border-radius:14px;padding:16px 18px;margin-bottom:14px;transition:var(--tr);}
+.rec-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md);}
+.rec-high{background:#fff5f5;border:1.5px solid #fca5a5;}
+.rec-medium{background:#fffbeb;border:1.5px solid #fde68a;}
+.rec-low{background:#f0fdf4;border:1.5px solid #bbf7d0;}
+.rec-urgency-badge{padding:2px 10px;border-radius:20px;font-size:.65rem;font-weight:800;letter-spacing:.04em;}
+.rec-urg-high{background:#fee2e2;color:#dc2626;}
+.rec-urg-med{background:#fef3c7;color:#d97706;}
+.rec-urg-low{background:#dcfce7;color:#16a34a;}
+.rec-advice{background:rgba(79,70,229,.04);border-left:3px solid #6366f1;border-radius:0 7px 7px 0;padding:10px 13px;margin:10px 0;}
+.step-num{width:20px;height:20px;border-radius:50%;background:#4f46e5;color:#fff;font-size:.62rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+
+/* ── Quick Actions grid ── */
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:1024px){.qa-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:640px){.qa-grid{grid-template-columns:repeat(2,1fr);}}
+.qa-item{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:10px;text-decoration:none;font-size:.82rem;font-weight:600;transition:var(--tr);border:1.5px solid transparent;}
+.qa-item:hover{transform:translateY(-2px);box-shadow:var(--sh-md);}
+.qa-blue{background:rgba(59,130,246,.07);color:#1d4ed8;border-color:rgba(59,130,246,.2);}
+.qa-blue:hover{background:#3b82f6;color:#fff;border-color:#3b82f6;}
+.qa-green{background:rgba(16,185,129,.07);color:#065f46;border-color:rgba(16,185,129,.2);}
+.qa-green:hover{background:#10b981;color:#fff;border-color:#10b981;}
+.qa-amber{background:rgba(245,158,11,.07);color:#92400e;border-color:rgba(245,158,11,.2);}
+.qa-amber:hover{background:#f59e0b;color:#fff;border-color:#f59e0b;}
+.qa-violet{background:rgba(139,92,246,.07);color:#5b21b6;border-color:rgba(139,92,246,.2);}
+.qa-violet:hover{background:#8b5cf6;color:#fff;border-color:#8b5cf6;}
+.qa-dark{background:rgba(30,41,59,.07);color:#1e293b;border-color:rgba(30,41,59,.2);}
+.qa-dark:hover{background:#1e293b;color:#fff;border-color:#1e293b;}
+.qa-red{background:rgba(239,68,68,.07);color:#991b1b;border-color:rgba(239,68,68,.2);}
+.qa-red:hover{background:#ef4444;color:#fff;border-color:#ef4444;}
+.qa-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0;}
+
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:32px 16px;color:var(--muted);}
+.empty-state i{font-size:1.8rem;display:block;margin-bottom:8px;opacity:.3;}
+.empty-state p{font-size:.82rem;margin:0;}
+
+/* ── Exam term item ── */
+.term-item{background:#f8fafc;border:1px solid var(--border);border-radius:9px;padding:10px 14px;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;}
+.term-item:last-child{margin-bottom:0;}
+
+@media(max-width:768px){.sb{transform:translateX(-100%);}.main{margin-left:0;}.content{padding:16px;}}
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ────────────────────────────────────────────── -->
+<aside class="sb">
+  <div class="sb-brand">
+    <div class="sb-logo"><i class="bi bi-person-badge-fill" style="color:#fff;font-size:1rem;"></i></div>
+    <div class="sb-brand-text">Scholaro ERP<small>Staff Portal</small></div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section-lbl">Overview</div>
+    <a href="{% url 'accounts:staff_dashboard' %}" class="sb-link active">
+      <div class="sb-link-icon" style="background:rgba(16,185,129,.25);"><i class="bi bi-speedometer2" style="color:#6ee7b7;"></i></div>Dashboard
+    </a>
+
+    <div class="sb-section-lbl">Teaching</div>
+    <a href="{% url 'attendance:mark_student_attendance' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(16,185,129,.2);"><i class="bi bi-calendar-check-fill" style="color:#6ee7b7;"></i></div>Mark Attendance
+    </a>
+    <a href="{% url 'academics:marks_entry_select' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(59,130,246,.2);"><i class="bi bi-pencil-fill" style="color:#93c5fd;"></i></div>Enter Marks
+    </a>
+    <a href="{% url 'assignments:teacher_dashboard' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(245,158,11,.2);"><i class="bi bi-clipboard2-fill" style="color:#fcd34d;"></i></div>Assignments
+      {% if pending_checks and pending_checks > 0 %}<span class="sb-badge">{{ pending_checks }}</span>{% endif %}
+    </a>
+    <a href="{% url 'students:student_list' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(6,182,212,.2);"><i class="bi bi-mortarboard-fill" style="color:#67e8f9;"></i></div>My Students
+    </a>
+    <a href="{% url 'academics:create_routine' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(99,102,241,.2);"><i class="bi bi-clock-fill" style="color:#a5b4fc;"></i></div>Class Routine
+    </a>
+    <a href="{% url 'academics:exam_term_list' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(139,92,246,.2);"><i class="bi bi-journal-bookmark-fill" style="color:#c4b5fd;"></i></div>Exam Terms
+    </a>
+
+    <div class="sb-section-lbl">Tools</div>
+    <a href="{% url 'analytics:teacher_analytics' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(236,72,153,.2);"><i class="bi bi-robot" style="color:#f9a8d4;"></i></div>AI Analytics
+    </a>
+    <a href="{% url 'attendance:student_attendance_list' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(245,158,11,.2);"><i class="bi bi-list-check" style="color:#fcd34d;"></i></div>Attendance Records
+    </a>
+    <a href="{% url 'reporting_system:student_results' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(139,92,246,.2);"><i class="bi bi-file-earmark-bar-graph" style="color:#c4b5fd;"></i></div>Results
+    </a>
+    <a href="{% url 'reporting_system:reporting_dashboard' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(30,41,59,.25);"><i class="bi bi-file-earmark-text-fill" style="color:#94a3b8;"></i></div>Reports
+    </a>
+    <a href="{% url 'notifications:send' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(99,102,241,.2);"><i class="bi bi-bell-fill" style="color:#a5b4fc;"></i></div>Send Notice
+      {% if unread_notifications and unread_notifications > 0 %}<span class="sb-badge">{{ unread_notifications }}</span>{% endif %}
+    </a>
+
+    <div class="sb-section-lbl">Account</div>
+    <a href="{% url 'accounts:change_credentials' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(100,116,139,.2);"><i class="bi bi-shield-lock-fill" style="color:#94a3b8;"></i></div>Security
+    </a>
+  </nav>
+
+  <div class="sb-foot">
+    <div class="sb-user-card">
+      <div class="sb-avatar">{{ request.user.get_full_name|default:request.user.username|first|upper }}</div>
+      <div>
+        <div class="sb-user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+        <div class="sb-user-role">{% if staff_profile %}{{ staff_profile.get_designation_display }}{% else %}Staff{% endif %}</div>
+      </div>
+    </div>
+    <form method="POST" action="{% url 'accounts:logout' %}">
+      {% csrf_token %}
+      <button type="submit" style="width:100%;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:9px;padding:8px;font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:'Inter',sans-serif;transition:all .2s;"
+              onmouseover="this.style.background='rgba(239,68,68,.22)'"
+              onmouseout="this.style.background='rgba(239,68,68,.12)'">
+        <i class="bi bi-box-arrow-right"></i> Logout
+      </button>
+    </form>
+  </div>
+</aside>
+
+<!-- ── MAIN ───────────────────────────────────────────────── -->
+<div class="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1>Staff Dashboard</h1>
+      <p>{{ today_weekday }}, {{ today }} — teaching overview</p>
+    </div>
+    <div class="topbar-right">
+      <a href="{% url 'notifications:inbox' %}" class="tb-btn">
+        <i class="bi bi-bell-fill" style="font-size:.9rem;"></i>
+        {% if unread_notifications and unread_notifications > 0 %}<span class="tb-badge">{{ unread_notifications }}</span>{% endif %}
+      </a>
+      <div class="tb-user" tabindex="0">
+        <div class="tb-user-av">{{ request.user.get_full_name|default:request.user.username|first|upper }}</div>
+        <span class="tb-user-name d-none d-md-block">{{ request.user.username }}</span>
+        <i class="bi bi-chevron-down" style="font-size:.65rem;color:#94a3b8;"></i>
+        <div class="tb-dropdown">
+          <div class="tb-dd-header">
+            <div class="tb-dd-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+            <span class="tb-dd-role">{% if staff_profile %}{{ staff_profile.get_designation_display }}{% else %}Staff{% endif %}</span>
+          </div>
+          <a href="{% url 'accounts:change_credentials' %}" class="tb-dd-item">
+            <i class="bi bi-shield-lock" style="color:#10b981;"></i> Security Settings
+          </a>
+          <div style="height:1px;background:#f1f5f9;margin:4px 0;"></div>
+          <form method="POST" action="{% url 'accounts:logout' %}" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="tb-dd-item danger" style="width:100%;background:transparent;border:none;cursor:pointer;font-family:'Inter',sans-serif;text-align:left;">
+              <i class="bi bi-box-arrow-right"></i> Logout
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- No profile warning -->
+    {% if not staff_profile %}
+    <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.3);border-left:4px solid #f59e0b;border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px;">
+      <i class="bi bi-exclamation-triangle-fill" style="color:#f59e0b;font-size:1.1rem;flex-shrink:0;margin-top:2px;"></i>
+      <div>
+        <strong style="color:#92400e;font-size:.88rem;">Account not linked to a staff profile.</strong>
+        <p style="color:#78350f;font-size:.78rem;margin:3px 0 0;line-height:1.5;">Contact the administrator to link your account. Most features require a staff profile.</p>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Hero banner -->
+    <div class="hero">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+          <p class="hero-name"><i class="bi bi-person-badge-fill me-2" style="color:#a7f3d0;"></i>Welcome, {{ request.user.get_full_name|default:request.user.username }}</p>
+          {% if staff_profile %}
+          <p class="hero-sub">{% if staff_profile.department %}{{ staff_profile.department }} &nbsp;&middot;&nbsp; {% endif %}{{ staff_profile.get_designation_display }} &nbsp;&middot;&nbsp; {{ staff_profile.staff_id }}</p>
+          <div class="hero-chips">
+            <span class="chip"><i class="bi bi-briefcase"></i>{{ staff_profile.get_designation_display }}</span>
+            {% if staff_profile.department %}<span class="chip"><i class="bi bi-building"></i>{{ staff_profile.department }}</span>{% endif %}
+            <span class="chip"><i class="bi bi-calendar-event"></i>Joined {{ staff_profile.joining_date }}</span>
+          </div>
+          {% else %}
+          <p class="hero-sub">Staff Dashboard — manage academic and student activities</p>
+          {% endif %}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;position:relative;z-index:1;">
+          {% if staff_profile %}
+          {% if own_attendance_today %}
+          <span class="att-badge att-{{ own_attendance_today.status }}">
+            <i class="bi bi-circle-fill" style="font-size:.5rem;"></i>
+            Today: {{ own_attendance_today.get_status_display }}
+          </span>
+          {% else %}
+          <span class="att-badge att-none"><i class="bi bi-circle" style="font-size:.5rem;"></i> Attendance Not Marked</span>
+          {% endif %}
+          {% if attendance_today_count > 0 %}
+          <span class="chip" style="color:#4ade80;background:rgba(74,222,128,.15);border-color:rgba(74,222,128,.25);">
+            <i class="bi bi-check-circle-fill"></i> {{ attendance_today_count }} student{{ attendance_today_count|pluralize }} marked today
+          </span>
+          {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Stat tiles -->
+    <div class="stat-row">
+      <div class="tile">
+        <div class="tile-icon" style="background:#dbeafe;"><i class="bi bi-book-fill" style="color:#1d4ed8;"></i></div>
+        <div class="tile-num" style="color:#1d4ed8;">{{ assigned_subjects|length|default:0 }}</div>
+        <div class="tile-lbl"><i class="bi bi-book me-1"></i>Subjects Assigned</div>
+      </div>
+      <div class="tile">
+        <div class="tile-icon" style="background:#d1fae5;"><i class="bi bi-people-fill" style="color:#059669;"></i></div>
+        <div class="tile-num" style="color:#059669;">{{ total_students_taught|default:0 }}</div>
+        <div class="tile-lbl"><i class="bi bi-people me-1"></i>Students in My Classes</div>
+      </div>
+      <div class="tile">
+        <div class="tile-icon" style="background:#fef3c7;"><i class="bi bi-clipboard-check-fill" style="color:#d97706;"></i></div>
+        <div class="tile-num" style="color:#d97706;">{{ pending_checks|default:0 }}</div>
+        <div class="tile-lbl"><i class="bi bi-clock me-1"></i>Unchecked Submissions</div>
+      </div>
+      <div class="tile">
+        <div class="tile-icon" style="background:#ede9fe;"><i class="bi bi-calendar-day-fill" style="color:#7c3aed;"></i></div>
+        <div class="tile-num" style="color:#7c3aed;">{{ todays_classes|length|default:0 }}</div>
+        <div class="tile-lbl"><i class="bi bi-clock me-1"></i>Classes Today ({{ today_weekday }})</div>
+      </div>
+    </div>
+
+    <!-- Today's timetable + My status -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-7">
+        <div class="card-s h-100">
+          <div class="card-head">
+            <div class="card-title"><i class="bi bi-calendar-week-fill" style="color:#3b82f6;"></i> Today's Classes — {{ today_weekday }}</div>
+            <a href="{% url 'academics:create_routine' %}" class="card-btn">Manage Routine</a>
+          </div>
+          <div class="card-body">
+            {% if todays_classes %}
+            {% for cls in todays_classes %}
+            <div class="routine-item">
+              <div class="d-flex align-items-center gap-12" style="gap:12px;min-width:0;">
+                <span class="time-pill">{{ cls.start_time|time:"g:i A" }}–{{ cls.end_time|time:"g:i A" }}</span>
+                <div style="min-width:0;">
+                  <div style="font-weight:700;color:var(--text);font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ cls.class_subject.subject.name }}</div>
+                  <div style="font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:6px;margin-top:2px;">
+                    <span class="section-badge">{{ cls.section }}</span>
+                    {% if cls.room %}<span><i class="bi bi-geo-alt"></i> {{ cls.room }}</span>{% endif %}
+                  </div>
+                </div>
+              </div>
+              <a href="{% url 'attendance:mark_student_attendance' %}" class="card-btn" style="flex-shrink:0;">
+                <i class="bi bi-calendar-check"></i> Mark
+              </a>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state"><i class="bi bi-calendar2-x"></i><p>No classes scheduled for today.</p></div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="card-s h-100">
+          <div class="card-head">
+            <div class="card-title"><i class="bi bi-person-check-fill" style="color:#10b981;"></i> My Profile &amp; Status</div>
+          </div>
+          <div class="card-body">
+            {% if staff_profile %}
+            <div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+              <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px;">Today's Attendance</div>
+              {% if own_attendance_today %}
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:10px;height:10px;border-radius:50%;background:{% if own_attendance_today.status == 'present' %}#10b981{% elif own_attendance_today.status == 'late' %}#f59e0b{% else %}#ef4444{% endif %};"></div>
+                <span style="font-weight:700;color:var(--text);font-size:.9rem;">{{ own_attendance_today.get_status_display }}</span>
+              </div>
+              {% else %}
+              <div style="color:var(--muted);font-size:.85rem;">Not marked yet for today.</div>
+              {% endif %}
+            </div>
+            <div style="font-size:.82rem;">
+              {% for label,val in profile_rows %}
+              <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;">
+                <span style="color:var(--muted);">{{ label }}</span><strong style="color:var(--text);">{{ val }}</strong>
+              </div>
+              {% empty %}
+              <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;">
+                <span style="color:var(--muted);">Staff ID</span><strong>{{ staff_profile.staff_id }}</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;">
+                <span style="color:var(--muted);">Designation</span><strong>{{ staff_profile.get_designation_display }}</strong>
+              </div>
+              {% if staff_profile.department %}
+              <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;">
+                <span style="color:var(--muted);">Department</span><strong>{{ staff_profile.department }}</strong>
+              </div>
+              {% endif %}
+              <div style="display:flex;justify-content:space-between;padding:7px 0;">
+                <span style="color:var(--muted);">Joined</span><strong>{{ staff_profile.joining_date }}</strong>
+              </div>
+              {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state"><i class="bi bi-person-x"></i><p>No staff profile linked.</p></div>
+            {% endif %}
+
+            {% if active_terms %}
+            <div style="margin-top:14px;">
+              <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px;">Active Exam Terms</div>
+              {% for term in active_terms %}
+              <div class="term-item">
+                <div>
+                  <div style="font-weight:600;font-size:.85rem;color:var(--text);">{{ term.name }}</div>
+                  <div style="font-size:.7rem;color:var(--muted);">{{ term.start_date }} → {{ term.end_date }}</div>
+                </div>
+                <span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:6px;font-size:.68rem;font-weight:700;">Active</span>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subjects + Assignments -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-6">
+        <div class="card-s">
+          <div class="card-head">
+            <div class="card-title"><i class="bi bi-book-half" style="color:#8b5cf6;"></i> Assigned Subjects</div>
+            <a href="{% url 'academics:assign_teacher' %}" class="card-btn">Manage</a>
+          </div>
+          {% if assigned_subjects %}
+          <div style="overflow-x:auto;">
+            <table class="table-s">
+              <thead><tr><th>Subject</th><th>Class</th><th>Section</th><th></th></tr></thead>
+              <tbody>
+                {% for asn in assigned_subjects %}
+                <tr>
+                  <td><span style="font-weight:700;color:var(--text);">{{ asn.class_subject.subject.name }}</span></td>
+                  <td style="color:var(--muted);">{{ asn.class_subject.class_obj.name }}</td>
+                  <td><span class="section-badge">{{ asn.section.name }}</span></td>
+                  <td><a href="{% url 'academics:marks_entry_select' %}" class="card-btn">Marks</a></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="card-body"><div class="empty-state"><i class="bi bi-book"></i><p>No subjects assigned yet.</p></div></div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card-s">
+          <div class="card-head">
+            <div class="card-title">
+              <i class="bi bi-clipboard-fill" style="color:#f59e0b;"></i> My Assignments
+              {% if pending_checks and pending_checks > 0 %}
+              <span style="background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:99px;font-size:.68rem;font-weight:800;">{{ pending_checks }} pending</span>
+              {% endif %}
+            </div>
+            <a href="{% url 'assignments:create' %}" class="card-btn">+ Create</a>
+          </div>
+          <div class="card-body">
+            {% if my_assignments %}
+            {% for asgn in my_assignments %}
+            <div class="asgn-item">
+              <div style="min-width:0;">
+                <div style="font-weight:700;font-size:.88rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ asgn.title|truncatechars:38 }}</div>
+                <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">{{ asgn.class_subject.subject.name }} &nbsp;&middot;&nbsp; Due: {{ asgn.due_date }}</div>
+              </div>
+              <div class="d-flex align-items-center gap-8" style="gap:8px;flex-shrink:0;">
+                <span class="due-badge due-soon">{{ asgn.due_date }}</span>
+                <a href="{% url 'assignments:check' asgn.id %}" class="card-btn">Check</a>
+              </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state"><i class="bi bi-clipboard"></i><p>No published assignments yet.</p></div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Teaching Recommendations -->
+    {% if teacher_own_recs %}
+    <div class="card-s mb-4">
+      <div class="card-head">
+        <div class="card-title">
+          <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="bi bi-person-check-fill" style="color:#fff;font-size:.85rem;"></i>
+          </div>
+          My Teaching Recommendations
+        </div>
+        <a href="{% url 'analytics:teacher_analytics' %}" class="card-btn"><i class="bi bi-bar-chart-line me-1"></i>Full Analytics</a>
+      </div>
+      <div class="card-body">
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:16px;line-height:1.6;">Personalised guidance for your assigned subjects — based on how your students are performing.</p>
+        {% for rec in teacher_own_recs %}
+        <div class="rec-card rec-{{ rec.urgency }}">
+          <div class="d-flex justify-content-between align-items-flex-start flex-wrap gap-2 mb-3">
+            <div class="d-flex align-items-center gap-8 flex-wrap" style="gap:8px;">
+              <span style="font-size:.95rem;font-weight:800;color:{% if rec.urgency == 'high' %}#dc2626{% elif rec.urgency == 'medium' %}#d97706{% else %}#16a34a{% endif %};">{{ rec.subject }}</span>
+              <span style="background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:5px;font-size:.68rem;font-weight:600;">Class {{ rec.class_obj }} &middot; Sec {{ rec.section }}</span>
+              <span class="rec-urgency-badge rec-urg-{{ rec.urgency }}">
+                {% if rec.urgency == 'high' %}NEEDS ATTENTION{% elif rec.urgency == 'medium' %}ROOM TO IMPROVE{% else %}DOING WELL{% endif %}
+              </span>
+            </div>
+            <div class="d-flex gap-16 align-items-center" style="gap:16px;flex-shrink:0;">
+              <div style="text-align:center;">
+                <div style="font-size:1.1rem;font-weight:800;color:{% if rec.avg_predicted_pct >= 75 %}#16a34a{% elif rec.avg_predicted_pct >= 40 %}#d97706{% else %}#dc2626{% endif %};">{{ rec.avg_predicted_pct }}%</div>
+                <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;">Class Avg</div>
+              </div>
+              {% if rec.at_risk_count > 0 %}
+              <div style="text-align:center;">
+                <div style="font-size:.9rem;font-weight:800;color:#dc2626;">{{ rec.at_risk_count }}</div>
+                <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;">At Risk</div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:.72rem;color:var(--muted);margin-bottom:10px;">
+            {% if rec.improving_count > 0 %}<span style="color:#16a34a;font-weight:600;"><i class="bi bi-graph-up-arrow me-1"></i>{{ rec.improving_count }} improving</span>{% endif %}
+            {% if rec.declining_count > 0 %}<span style="color:#dc2626;font-weight:600;"><i class="bi bi-graph-down-arrow me-1"></i>{{ rec.declining_count }} declining</span>{% endif %}
+            <span style="font-weight:600;color:{% if rec.avg_attendance >= 75 %}#16a34a{% else %}#dc2626{% endif %};"><i class="bi bi-calendar-check me-1"></i>Attendance {{ rec.avg_attendance }}%</span>
+          </div>
+
+          <div class="rec-advice">
+            <p style="font-size:.875rem;color:#374151;line-height:1.7;margin:0;">{{ rec.advice }}</p>
+          </div>
+
+          {% if rec.action_steps %}
+          <div style="margin-top:10px;">
+            <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:8px;"><i class="bi bi-list-check me-1"></i>Action Steps</div>
+            {% for step in rec.action_steps %}
+            <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 10px;background:#f8fafc;border-radius:7px;margin-bottom:4px;">
+              <div class="step-num">{{ forloop.counter }}</div>
+              <div style="font-size:.83rem;color:#475569;line-height:1.55;">{{ step }}</div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="card-s">
+      <div class="card-head">
+        <div class="card-title"><i class="bi bi-lightning-charge-fill" style="color:#f59e0b;"></i> Quick Actions</div>
+      </div>
+      <div class="card-body">
+        <div class="qa-grid">
+          <a href="{% url 'academics:marks_entry_select' %}" class="qa-item qa-blue"><div class="qa-icon" style="background:rgba(59,130,246,.12);"><i class="bi bi-pencil-fill" style="color:#1d4ed8;"></i></div>Enter Marks</a>
+          <a href="{% url 'attendance:mark_student_attendance' %}" class="qa-item qa-green"><div class="qa-icon" style="background:rgba(16,185,129,.12);"><i class="bi bi-calendar-check-fill" style="color:#059669;"></i></div>Mark Attendance</a>
+          <a href="{% url 'students:student_list' %}" class="qa-item qa-blue"><div class="qa-icon" style="background:rgba(59,130,246,.12);"><i class="bi bi-mortarboard-fill" style="color:#1d4ed8;"></i></div>View Students</a>
+          <a href="{% url 'analytics:teacher_analytics' %}" class="qa-item qa-dark"><div class="qa-icon" style="background:rgba(30,41,59,.12);"><i class="bi bi-robot" style="color:#1e293b;"></i></div>AI Analytics</a>
+          <a href="{% url 'attendance:student_attendance_list' %}" class="qa-item qa-amber"><div class="qa-icon" style="background:rgba(245,158,11,.12);"><i class="bi bi-list-check" style="color:#d97706;"></i></div>Attendance Records</a>
+          <a href="{% url 'reporting_system:student_results' %}" class="qa-item qa-violet"><div class="qa-icon" style="background:rgba(139,92,246,.12);"><i class="bi bi-file-earmark-bar-graph" style="color:#7c3aed;"></i></div>Results</a>
+          <a href="{% url 'assignments:teacher_dashboard' %}" class="qa-item qa-amber"><div class="qa-icon" style="background:rgba(245,158,11,.12);"><i class="bi bi-clipboard2-fill" style="color:#d97706;"></i></div>Assignments</a>
+          <a href="{% url 'notifications:send' %}" class="qa-item qa-violet"><div class="qa-icon" style="background:rgba(139,92,246,.12);"><i class="bi bi-bell-fill" style="color:#7c3aed;"></i></div>Send Notice</a>
+          <a href="{% url 'academics:create_routine' %}" class="qa-item qa-blue"><div class="qa-icon" style="background:rgba(59,130,246,.12);"><i class="bi bi-clock-fill" style="color:#1d4ed8;"></i></div>Class Routine</a>
+          <a href="{% url 'reporting_system:reporting_dashboard' %}" class="qa-item qa-dark"><div class="qa-icon" style="background:rgba(30,41,59,.12);"><i class="bi bi-file-earmark-text-fill" style="color:#1e293b;"></i></div>Reports</a>
+          <a href="{% url 'academics:exam_term_list' %}" class="qa-item qa-green"><div class="qa-icon" style="background:rgba(16,185,129,.12);"><i class="bi bi-journal-bookmark-fill" style="color:#059669;"></i></div>Exam Terms</a>
+          <a href="{% url 'accounts:change_credentials' %}" class="qa-item qa-dark"><div class="qa-icon" style="background:rgba(30,41,59,.12);"><i class="bi bi-shield-lock-fill" style="color:#1e293b;"></i></div>Security</a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* count-up tiles */
+document.querySelectorAll('.tile-num').forEach(function(el){
+  var n = parseInt(el.textContent.trim(), 10);
+  if(isNaN(n) || n === 0) return;
+  var steps = 30, step = 0;
+  var t = setInterval(function(){
+    step++;
+    el.textContent = Math.round(n * step / steps);
+    if(step >= steps){ el.textContent = n; clearInterval(t); }
+  }, 600 / steps);
+});
+</script>
+</body>
+</html>

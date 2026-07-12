@@ -1,0 +1,135 @@
+{% extends "accounts/base.html" %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title"><i class="bi bi-shield-check me-2 text-primary"></i>Audit Log</h1>
+    <p class="page-subtitle">Security & activity audit trail — {{ total_count }} total entries</p>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-2">
+        <label class="form-label">Event Type</label>
+        <select name="event" class="form-select form-select-sm">
+          <option value="">All Events</option>
+          {% for val, label in events %}
+            <option value="{{ val }}" {% if val == event_filter %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Username</label>
+        <input type="text" name="user" class="form-control form-control-sm" value="{{ user_filter }}" placeholder="username...">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Outcome</label>
+        <select name="success" class="form-select form-select-sm">
+          <option value="">All</option>
+          <option value="true"  {% if success_filter == "true" %}selected{% endif %}>Success</option>
+          <option value="false" {% if success_filter == "false" %}selected{% endif %}>Failed</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">From Date</label>
+        <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">To Date</label>
+        <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}">
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+        <a href="{% url 'audit_log:list' %}" class="btn btn-outline-secondary btn-sm w-100"><i class="bi bi-x"></i></a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Event</th>
+            <th>User</th>
+            <th>IP Address</th>
+            <th>Object</th>
+            <th>Detail</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in page_obj %}
+          <tr>
+            <td><small class="text-muted">{{ log.created_at|date:"Y-m-d H:i:s" }}</small></td>
+            <td>
+              <span class="badge
+                {% if 'login' in log.event %}bg-primary
+                {% elif 'delete' in log.event %}bg-danger
+                {% elif 'create' in log.event %}bg-success
+                {% elif 'update' in log.event or 'change' in log.event %}bg-warning text-dark
+                {% elif 'denied' in log.event %}bg-danger
+                {% elif 'logout' in log.event %}bg-secondary
+                {% else %}bg-info text-dark{% endif %}
+              ">{{ log.get_event_display }}</span>
+            </td>
+            <td>
+              {% if log.user %}
+                <span class="fw-semibold">{{ log.user.username }}</span>
+                <small class="text-muted d-block">{{ log.user.role }}</small>
+              {% else %}
+                <span class="text-muted">anonymous</span>
+              {% endif %}
+            </td>
+            <td><code class="small">{{ log.ip_address|default:"—" }}</code></td>
+            <td>
+              {% if log.model_name %}
+                <small class="text-muted">{{ log.model_name }}</small>
+                {% if log.object_repr %}<br><small>{{ log.object_repr|truncatechars:40 }}</small>{% endif %}
+              {% else %}—{% endif %}
+            </td>
+            <td><small>{{ log.detail|truncatechars:80 }}</small></td>
+            <td>
+              {% if log.success %}
+                <span class="badge bg-success"><i class="bi bi-check"></i> OK</span>
+              {% else %}
+                <span class="badge bg-danger"><i class="bi bi-x"></i> Failed</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-5">
+              <i class="bi bi-shield-check display-4 d-block mb-2 opacity-25"></i>
+              No audit log entries found.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% if page_obj.has_other_pages %}
+  <div class="card-footer d-flex justify-content-between align-items-center">
+    <small class="text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</small>
+    <nav>
+      <ul class="pagination pagination-sm mb-0">
+        {% if page_obj.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&event={{ event_filter }}&user={{ user_filter }}&success={{ success_filter }}&date_from={{ date_from }}&date_to={{ date_to }}">‹</a></li>
+        {% endif %}
+        <li class="page-item active"><a class="page-link" href="#">{{ page_obj.number }}</a></li>
+        {% if page_obj.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&event={{ event_filter }}&user={{ user_filter }}&success={{ success_filter }}&date_from={{ date_from }}&date_to={{ date_to }}">›</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,522 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Principal Analytics View — Scholaro ERP</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;margin:0;}
+.page-header{background:linear-gradient(135deg,#1e1b4b,#1e3a5f,#0f172a);padding:22px 32px;border-bottom:1px solid #1e40af;margin-bottom:24px;}
+.back-btn{background:#1e293b;color:#94a3b8;border:1px solid #334155;padding:7px 16px;border-radius:9px;text-decoration:none;font-size:.82rem;}
+.back-btn:hover{background:#334155;color:white;}
+.card-dark{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px;margin-bottom:20px;}
+.section-title{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:#475569;margin-bottom:12px;font-weight:700;}
+.stat-card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px;text-align:center;cursor:pointer;transition:.2s;}
+.stat-card:hover{border-color:#4f46e5;transform:translateY(-2px);}
+.stat-card .number{font-size:2rem;font-weight:800;line-height:1;}
+.stat-card .label{font-size:.8rem;color:#64748b;margin-top:4px;}
+.stat-card .hint{font-size:.65rem;color:#334155;margin-top:4px;}
+.pred-table th{background:#0f172a;color:#64748b;font-size:.72rem;text-transform:uppercase;border-color:#334155;}
+.pred-table td{vertical-align:middle;border-color:#334155;font-size:.875rem;}
+.mark-good{color:#4ade80;font-weight:700;}
+.mark-average{color:#facc15;font-weight:700;}
+.mark-poor{color:#f87171;font-weight:700;}
+.trend-improving{color:#4ade80;font-weight:700;}
+.trend-declining{color:#f87171;font-weight:700;}
+.trend-stable{color:#fbbf24;font-weight:700;}
+.chart-card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px;margin-bottom:20px;}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;margin:2px;}
+.tag-red{background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3);}
+.tag-green{background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3);}
+.modal-dark .modal-content{background:#1e293b;border:1px solid #334155;border-radius:16px;color:#e2e8f0;}
+.modal-dark .modal-header{border-bottom:1px solid #334155;padding:16px 20px;}
+.modal-dark .modal-title{font-weight:700;font-size:1rem;}
+.modal-dark .btn-close{filter:invert(1);}
+.modal-dark .modal-body{padding:16px 20px;max-height:65vh;overflow-y:auto;}
+.student-row{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 14px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
+.student-row-high{border-left:3px solid #ef4444;}
+.student-row-medium{border-left:3px solid #f59e0b;}
+.student-row-low{border-left:3px solid #22c55e;}
+.btn-view{background:#1d4ed8;color:#fff;border:none;padding:5px 14px;border-radius:8px;font-size:.78rem;text-decoration:none;font-weight:600;display:inline-block;}
+.btn-view:hover{background:#2563eb;color:#fff;}
+/* Risk filter tabs in class modal */
+.risk-tab{display:inline-block;padding:5px 14px;border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer;border:1px solid transparent;margin-right:4px;margin-bottom:8px;transition:.15s;}
+.risk-tab-all{background:rgba(148,163,184,.12);color:#94a3b8;border-color:#334155;}
+.risk-tab-all.active{background:#334155;color:#e2e8f0;border-color:#475569;}
+.risk-tab-high{background:rgba(239,68,68,.1);color:#f87171;border-color:rgba(239,68,68,.25);}
+.risk-tab-high.active{background:#ef4444;color:#fff;border-color:#ef4444;}
+.risk-tab-medium{background:rgba(245,158,11,.1);color:#f59e0b;border-color:rgba(245,158,11,.25);}
+.risk-tab-medium.active{background:#f59e0b;color:#fff;border-color:#f59e0b;}
+.risk-tab-low{background:rgba(74,222,128,.1);color:#4ade80;border-color:rgba(74,222,128,.25);}
+.risk-tab-low.active{background:#16a34a;color:#fff;border-color:#16a34a;}
+/* Clickable class card in needs-attention panel */
+.cls-attn-card{background:#0f172a;border:1px solid #7f1d1d;border-radius:10px;padding:11px 14px;margin-bottom:10px;cursor:pointer;transition:.18s;}
+.cls-attn-card:hover{border-color:#ef4444;transform:translateX(2px);}
+.cls-attn-card .cls-name{font-weight:700;color:#e2e8f0;font-size:.9rem;}
+.cls-attn-card .cls-hint{font-size:.7rem;color:#64748b;margin-top:2px;}
+</style>
+</head>
+<body>
+
+<div class="page-header d-flex align-items-center gap-3">
+  <a href="{% url 'accounts:principal_dashboard' %}" class="back-btn"><i class="bi bi-arrow-left me-1"></i>Back</a>
+  <div>
+    <h4 style="margin:0;font-size:1.2rem;font-weight:800;color:white;"><i class="bi bi-building me-2" style="color:#a5b4fc;"></i>Principal Analytics View</h4>
+    <p style="margin:2px 0 0;font-size:.78rem;color:#475569;">School-wide prediction summary — click risk cards or a class to drill down</p>
+  </div>
+</div>
+
+<div class="container-fluid px-4 pb-5">
+
+  <!-- School-wide stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-2"><div class="stat-card"><div class="number" style="color:#38bdf8;">{{ principal_data.school_stats.total_students }}</div><div class="label">Total Students</div></div></div>
+    <div class="col-md-2"><div class="stat-card"><div class="number" style="color:#a78bfa;">{{ principal_data.school_stats.avg_predicted_pct }}%</div><div class="label">Avg Predicted %</div></div></div>
+    <div class="col-md-2"><div class="stat-card"><div class="number" style="color:#06b6d4;">{{ principal_data.school_stats.avg_predicted_gpa }}</div><div class="label">Avg Predicted GPA</div></div></div>
+    <div class="col-md-2"><div class="stat-card" data-bs-toggle="modal" data-bs-target="#pModalHigh"><div class="number" style="color:#f87171;">{{ principal_data.school_stats.high_risk_count }}</div><div class="label">High Risk</div><div class="hint"><i class="bi bi-cursor-fill me-1"></i>Click to see names</div></div></div>
+    <div class="col-md-2"><div class="stat-card" data-bs-toggle="modal" data-bs-target="#pModalMedium"><div class="number" style="color:#fbbf24;">{{ principal_data.school_stats.medium_risk_count }}</div><div class="label">Medium Risk</div><div class="hint"><i class="bi bi-cursor-fill me-1"></i>Click to see names</div></div></div>
+    <div class="col-md-2"><div class="stat-card" data-bs-toggle="modal" data-bs-target="#pModalLow"><div class="number" style="color:#4ade80;">{{ principal_data.school_stats.low_risk_count }}</div><div class="label">Low Risk</div><div class="hint"><i class="bi bi-cursor-fill me-1"></i>Click to see names</div></div></div>
+  </div>
+
+  <!-- Charts -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <div style="font-size:.85rem;font-weight:700;color:#e2e8f0;margin-bottom:4px;"><i class="bi bi-bar-chart-fill me-1" style="color:#38bdf8;"></i>Class-Wise GPA Forecast</div>
+        <div style="font-size:.72rem;color:#475569;margin-bottom:12px;">Current vs Predicted GPA per class</div>
+        <div style="position:relative;height:240px;"><canvas id="gpaChart"></canvas></div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <div style="font-size:.85rem;font-weight:700;color:#e2e8f0;margin-bottom:4px;"><i class="bi bi-layers-fill me-1" style="color:#a78bfa;"></i>Class-Wise Risk Distribution</div>
+        <div style="font-size:.72rem;color:#475569;margin-bottom:12px;">High / Medium / Low risk students per class</div>
+        <div style="position:relative;height:240px;"><canvas id="riskStackChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+
+      <!-- Class summary table -->
+      <div class="card-dark">
+        <div class="section-title"><i class="bi bi-table me-1" style="color:#38bdf8;"></i>Class-Wise Prediction Summary</div>
+        {% if principal_data.class_summary %}
+        <div class="table-responsive">
+          <table class="table table-dark pred-table mb-0">
+            <thead><tr><th>Class</th><th>Students</th><th>Current Avg %</th><th>Predicted Avg %</th><th>Predicted GPA</th><th>High Risk</th><th>Trend</th></tr></thead>
+            <tbody>
+            {% for cls in principal_data.class_summary %}
+            <tr>
+              <td style="font-weight:600;color:#e2e8f0;">{{ cls.class_name }}</td>
+              <td style="color:#94a3b8;">{{ cls.student_count }}</td>
+              <td><small style="color:#94a3b8;">{{ cls.avg_current_pct }}%</small></td>
+              <td>
+                {% if cls.avg_predicted_pct >= 75 %}<span class="mark-good">{{ cls.avg_predicted_pct }}%</span>
+                {% elif cls.avg_predicted_pct >= 40 %}<span class="mark-average">{{ cls.avg_predicted_pct }}%</span>
+                {% else %}<span class="mark-poor">{{ cls.avg_predicted_pct }}%</span>{% endif %}
+              </td>
+              <td style="color:#a78bfa;font-weight:600;">{{ cls.avg_predicted_gpa }}</td>
+              <td>
+                {% if cls.high_risk_count > 0 %}<span style="background:rgba(248,113,113,.15);color:#f87171;padding:2px 8px;border-radius:6px;font-size:.75rem;font-weight:700;">{{ cls.high_risk_count }}</span>
+                {% else %}<span style="color:#4ade80;font-size:.8rem;">0</span>{% endif %}
+              </td>
+              <td>
+                <span class="trend-{{ cls.trend }}">{% if cls.trend == 'improving' %}↑ Improving{% elif cls.trend == 'declining' %}↓ Declining{% else %}→ Stable{% endif %}</span>
+                {% if cls.high_risk_count > 0 %}<small style="color:#f87171;display:block;font-size:.65rem;">⚠ {{ cls.high_risk_count }} high risk</small>{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}<p style="color:#475569;font-size:.875rem;">No class data available.</p>{% endif %}
+      </div>
+
+      <!-- Declining subjects -->
+      {% if principal_data.declining_with_teacher %}
+      <div class="card-dark">
+        <div class="section-title"><i class="bi bi-graph-down-arrow me-1" style="color:#f87171;"></i>Declining Subjects — Responsible Teachers</div>
+        <div class="table-responsive">
+          <table class="table table-dark pred-table mb-0">
+            <thead><tr><th>Subject</th><th>Class</th><th>Section</th><th>Teacher</th><th>Predicted %</th></tr></thead>
+            <tbody>
+            {% for d in principal_data.declining_with_teacher %}
+            <tr>
+              <td style="font-weight:600;color:#f87171;">↓ {{ d.subject }}</td>
+              <td style="color:#94a3b8;">{{ d.class }}</td>
+              <td style="color:#94a3b8;">{{ d.section }}</td>
+              <td style="color:#e2e8f0;">{{ d.teacher }}</td>
+              <td><span class="mark-poor">{{ d.predicted_pct }}%</span></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <div class="col-lg-4">
+
+      <!-- Top Improving Classes -->
+      <div class="card-dark">
+        <div class="section-title"><i class="bi bi-graph-up-arrow me-1" style="color:#4ade80;"></i>Top Improving Classes</div>
+        {% if principal_data.top_improving_classes %}
+          {% for cls in principal_data.top_improving_classes %}
+          <div style="background:#0f172a;border:1px solid #166534;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:600;color:#e2e8f0;">{{ cls }}</span>
+            <span class="tag tag-green">↑ Improving</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="color:#475569;font-size:.85rem;">No classes qualify as improving.</p>
+        {% endif %}
+      </div>
+
+      <!-- ══ Classes Needing Attention — click to drill down ══ -->
+      <div class="card-dark" style="padding:0;overflow:hidden;">
+        <div style="padding:13px 16px 10px;border-bottom:1px solid #1e3a5f;background:rgba(239,68,68,.05);">
+          <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:#f87171;font-weight:700;margin-bottom:1px;">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>Classes Needing Attention
+          </div>
+          <div style="font-size:.7rem;color:#475569;">Click a class to view students by risk level</div>
+        </div>
+        <div style="padding:12px;">
+        {% if principal_data.needs_attention_classes %}
+          {% for cls in principal_data.needs_attention_classes %}
+          <div class="cls-attn-card"
+               onclick="openClassDrillDown('{{ cls.class_name|escapejs }}', {{ cls.high_risk_count }}, {{ cls.avg_predicted_pct }})">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div>
+                <div class="cls-name">{{ cls.class_name }}</div>
+                <div class="cls-hint"><i class="bi bi-exclamation-circle me-1" style="color:#f87171;"></i>{{ cls.note }}</div>
+                {% if cls.declining_subjects %}<div class="cls-hint" style="color:#fbbf24;margin-top:2px;"><i class="bi bi-graph-down-arrow me-1"></i>{{ cls.declining_subjects }}</div>{% endif %}
+              </div>
+              <div style="text-align:right;flex-shrink:0;margin-left:10px;">
+                <span class="tag tag-red" style="margin:0;">Needs Support</span>
+                <div style="font-size:.7rem;color:#64748b;margin-top:4px;">
+                  <i class="bi bi-cursor-fill me-1" style="color:#a5b4fc;"></i>Click to view
+                </div>
+              </div>
+            </div>
+            <!-- Mini risk bar -->
+            <div style="display:flex;gap:4px;margin-top:8px;align-items:center;">
+              {% if cls.high_risk_count > 0 %}<span style="background:rgba(239,68,68,.2);color:#f87171;padding:1px 7px;border-radius:4px;font-size:.63rem;font-weight:700;"><i class="bi bi-circle-fill" style="font-size:.4rem;margin-right:2px;"></i>HIGH: {{ cls.high_risk_count }}</span>{% endif %}
+              {% if cls.medium_risk_count > 0 %}<span style="background:rgba(245,158,11,.2);color:#f59e0b;padding:1px 7px;border-radius:4px;font-size:.63rem;font-weight:700;"><i class="bi bi-circle-fill" style="font-size:.4rem;margin-right:2px;"></i>MED: {{ cls.medium_risk_count }}</span>{% endif %}
+              {% if cls.low_risk_count > 0 %}<span style="background:rgba(74,222,128,.15);color:#4ade80;padding:1px 7px;border-radius:4px;font-size:.63rem;font-weight:700;"><i class="bi bi-circle-fill" style="font-size:.4rem;margin-right:2px;"></i>LOW: {{ cls.low_risk_count }}</span>{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="text-align:center;padding:20px;color:#4ade80;">
+            <i class="bi bi-check-circle-fill" style="font-size:1.3rem;display:block;margin-bottom:5px;"></i>
+            <div style="font-size:.85rem;font-weight:600;">All classes performing well</div>
+          </div>
+        {% endif %}
+        </div>
+      </div>
+      <!-- ══ end classes needing attention ══ -->
+
+    </div>
+  </div>
+  <!-- ══ Subject-Wise Teacher Advice ══ -->
+  {% if subject_teacher_advice %}
+  <div class="row g-4 mt-2">
+    <div class="col-12">
+      <div class="card-dark" style="border-color:#312e81;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+          <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:10px;padding:9px 13px;">
+            <i class="bi bi-person-video3" style="color:#fff;font-size:1.1rem;"></i>
+          </div>
+          <div>
+            <div style="font-size:.95rem;font-weight:800;color:#e2e8f0;">Subject-Wise Teacher Recommendations</div>
+            <div style="font-size:.72rem;color:#475569;margin-top:1px;">
+              What each teacher should focus on — based on student performance in their subject
+            </div>
+          </div>
+        </div>
+
+        <!-- Urgency filter tabs -->
+        <div style="margin-bottom:14px;">
+          <span class="risk-tab risk-tab-all active" id="advTab-all" onclick="filterAdvice('all')" style="cursor:pointer;">All Subjects</span>
+          <span class="risk-tab risk-tab-high" id="advTab-high" onclick="filterAdvice('high')" style="cursor:pointer;">Urgent</span>
+          <span class="risk-tab risk-tab-medium" id="advTab-medium" onclick="filterAdvice('medium')" style="cursor:pointer;">Needs Attention</span>
+          <span class="risk-tab risk-tab-low" id="advTab-low" onclick="filterAdvice('low')" style="cursor:pointer;">On Track</span>
+        </div>
+
+        <div id="adviceContainer">
+        {% for adv in subject_teacher_advice %}
+        <div class="adv-card" data-urgency="{{ adv.urgency }}"
+             style="background:#0f172a;border:1px solid
+               {% if adv.urgency == 'high' %}rgba(239,68,68,.35)
+               {% elif adv.urgency == 'medium' %}rgba(245,158,11,.3)
+               {% else %}rgba(74,222,128,.2){% endif %};
+               border-radius:12px;padding:16px 18px;margin-bottom:12px;">
+
+          <!-- Subject header row -->
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="font-size:.95rem;font-weight:800;color:
+                {% if adv.urgency == 'high' %}#f87171
+                {% elif adv.urgency == 'medium' %}#fbbf24
+                {% else %}#4ade80{% endif %};">
+                {{ adv.subject }}
+              </span>
+              {% if adv.urgency == 'high' %}
+              <span style="background:rgba(239,68,68,.2);color:#f87171;padding:2px 9px;border-radius:20px;font-size:.65rem;font-weight:800;">URGENT</span>
+              {% elif adv.urgency == 'medium' %}
+              <span style="background:rgba(245,158,11,.18);color:#fbbf24;padding:2px 9px;border-radius:20px;font-size:.65rem;font-weight:800;">NEEDS ATTENTION</span>
+              {% else %}
+              <span style="background:rgba(74,222,128,.15);color:#4ade80;padding:2px 9px;border-radius:20px;font-size:.65rem;font-weight:800;">ON TRACK</span>
+              {% endif %}
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+              <div style="text-align:right;">
+                <div style="font-size:1.1rem;font-weight:800;color:
+                  {% if adv.avg_predicted_pct >= 75 %}#4ade80
+                  {% elif adv.avg_predicted_pct >= 40 %}#fbbf24
+                  {% else %}#f87171{% endif %};">{{ adv.avg_predicted_pct }}%</div>
+                <div style="font-size:.62rem;color:#475569;">Class Avg</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:.85rem;font-weight:600;color:#a78bfa;">{{ adv.student_count }}</div>
+                <div style="font-size:.62rem;color:#475569;">Students</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Teacher + quick stats -->
+          <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;font-size:.72rem;color:#64748b;">
+            <span><i class="bi bi-person-badge-fill me-1" style="color:#a5b4fc;"></i>
+              <strong style="color:#e2e8f0;">{{ adv.teacher }}</strong>
+            </span>
+            {% if adv.improving_count > 0 %}
+            <span style="color:#4ade80;"><i class="bi bi-graph-up-arrow me-1"></i>{{ adv.improving_count }} Improving</span>
+            {% endif %}
+            {% if adv.declining_count > 0 %}
+            <span style="color:#f87171;"><i class="bi bi-graph-down-arrow me-1"></i>{{ adv.declining_count }} Declining</span>
+            {% endif %}
+            {% if adv.at_risk_count > 0 %}
+            <span style="color:#f87171;font-weight:700;"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ adv.at_risk_count }} At Risk</span>
+            {% endif %}
+            <span style="color:{% if adv.avg_attendance >= 75 %}#4ade80{% else %}#f87171{% endif %};">
+              <i class="bi bi-calendar-check me-1"></i>Att {{ adv.avg_attendance }}%
+            </span>
+          </div>
+
+          <!-- Principal advice text -->
+          <div style="background:rgba(99,102,241,.08);border-left:3px solid #6366f1;border-radius:6px;padding:10px 14px;margin-bottom:10px;">
+            <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:#6366f1;font-weight:700;margin-bottom:5px;">
+              <i class="bi bi-info-circle-fill me-1"></i>Recommendation for {{ adv.teacher }}
+            </div>
+            <p style="font-size:.85rem;color:#cbd5e1;line-height:1.65;margin:0;">{{ adv.principal_advice }}</p>
+          </div>
+
+          <!-- Key issues -->
+          {% if adv.key_issues %}
+          <div style="display:flex;flex-wrap:wrap;gap:5px;">
+            {% for issue in adv.key_issues %}
+            <span style="background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:2px 9px;border-radius:20px;font-size:.67rem;">{{ issue }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+        </div><!-- /adviceContainer -->
+
+        {% if not subject_teacher_advice %}
+        <div style="text-align:center;padding:32px;color:#4ade80;">
+          <i class="bi bi-check-circle-fill" style="font-size:1.5rem;display:block;margin-bottom:8px;"></i>
+          <div style="font-weight:600;">All subjects performing well — no urgent advice at this time.</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div><!-- /container-fluid -->
+
+<!-- ══ Class Drill-Down Modal ══ -->
+<div class="modal fade" id="classDetailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-dark">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title" id="classModalTitle"><i class="bi bi-building me-2" style="color:#a5b4fc;"></i>Class Students</h5>
+          <div id="classModalSubtitle" style="font-size:.75rem;color:#475569;margin-top:2px;"></div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Risk filter tabs -->
+        <div style="margin-bottom:12px;">
+          <span class="risk-tab risk-tab-all active" id="clsTab-all" onclick="filterClassModal('all')">All Students</span>
+          <span class="risk-tab risk-tab-high" id="clsTab-high" onclick="filterClassModal('high')"><i class="bi bi-circle-fill me-1" style="font-size:.45rem;"></i>High Risk</span>
+          <span class="risk-tab risk-tab-medium" id="clsTab-medium" onclick="filterClassModal('medium')"><i class="bi bi-circle-fill me-1" style="font-size:.45rem;"></i>Medium Risk</span>
+          <span class="risk-tab risk-tab-low" id="clsTab-low" onclick="filterClassModal('low')"><i class="bi bi-circle-fill me-1" style="font-size:.45rem;"></i>Low Risk</span>
+        </div>
+        <!-- Count summary line -->
+        <div id="clsCountLine" style="font-size:.75rem;color:#64748b;margin-bottom:10px;"></div>
+        <!-- Student list rendered by JS -->
+        <div id="classStudentList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Global risk modals (school-wide) -->
+<div class="modal fade" id="pModalHigh" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-dark">
+      <div class="modal-header"><h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2" style="color:#f87171;"></i>High Risk Students ({{ principal_data.school_stats.high_risk_count }})</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        {% for s in principal_data.students_by_risk.high %}<div class="student-row student-row-high"><div><div style="font-weight:600;color:#e2e8f0;">{{ s.name }}</div><small style="color:#64748b;">{{ s.class }} — Sec {{ s.section }} | Roll {{ s.roll }} | Avg: {{ s.avg_pct }}%</small></div><a href="{% url 'analytics:student_detail' s.student_id %}" class="btn-view" style="font-size:.72rem;padding:4px 10px;">Detail</a></div>{% empty %}<p style="color:#475569;">No high risk students.</p>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="pModalMedium" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-dark">
+      <div class="modal-header"><h5 class="modal-title"><i class="bi bi-dash-circle-fill me-2" style="color:#fbbf24;"></i>Medium Risk Students ({{ principal_data.school_stats.medium_risk_count }})</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        {% for s in principal_data.students_by_risk.medium %}<div class="student-row student-row-medium"><div><div style="font-weight:600;color:#e2e8f0;">{{ s.name }}</div><small style="color:#64748b;">{{ s.class }} — Sec {{ s.section }} | Roll {{ s.roll }} | Avg: {{ s.avg_pct }}%</small></div><a href="{% url 'analytics:student_detail' s.student_id %}" class="btn-view" style="font-size:.72rem;padding:4px 10px;">Detail</a></div>{% empty %}<p style="color:#475569;">No medium risk students.</p>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="pModalLow" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-dark">
+      <div class="modal-header"><h5 class="modal-title"><i class="bi bi-check-circle-fill me-2" style="color:#4ade80;"></i>Low Risk Students ({{ principal_data.school_stats.low_risk_count }})</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        {% for s in principal_data.students_by_risk.low %}<div class="student-row student-row-low"><div><div style="font-weight:600;color:#e2e8f0;">{{ s.name }}</div><small style="color:#64748b;">{{ s.class }} — Sec {{ s.section }} | Roll {{ s.roll }} | Avg: {{ s.avg_pct }}%</small></div><a href="{% url 'analytics:student_detail' s.student_id %}" class="btn-view" style="font-size:.72rem;padding:4px 10px;">Detail</a></div>{% empty %}<p style="color:#475569;">No low risk students.</p>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ── Per-class student data from Django (JSON) ─────────────────────────────
+// ── Advice urgency filter ─────────────────────────────────────────────────
+function filterAdvice(urgency) {
+  var cards = document.querySelectorAll('#adviceContainer .adv-card');
+  cards.forEach(function(c){
+    c.style.display = (urgency === 'all' || c.getAttribute('data-urgency') === urgency) ? 'block' : 'none';
+  });
+  ['all','high','medium','low'].forEach(function(u){
+    var tab = document.getElementById('advTab-'+u);
+    if(tab) tab.classList.toggle('active', u === urgency);
+  });
+}
+document.addEventListener('DOMContentLoaded', function(){ filterAdvice('all'); });
+var CLASS_DATA = {
+{% for cls_name, buckets in principal_data.students_by_class.items %}
+  "{{ cls_name|escapejs }}": {
+    "high":   [{% for s in buckets.high %}{"name":"{{ s.name|escapejs }}","class":"{{ s.class|escapejs }}","section":"{{ s.section|escapejs }}","roll":"{{ s.roll|escapejs }}","avg_pct":{{ s.avg_pct }},"student_id":{{ s.student_id }},"risk":"high"}{% if not forloop.last %},{% endif %}{% endfor %}],
+    "medium": [{% for s in buckets.medium %}{"name":"{{ s.name|escapejs }}","class":"{{ s.class|escapejs }}","section":"{{ s.section|escapejs }}","roll":"{{ s.roll|escapejs }}","avg_pct":{{ s.avg_pct }},"student_id":{{ s.student_id }},"risk":"medium"}{% if not forloop.last %},{% endif %}{% endfor %}],
+    "low":    [{% for s in buckets.low %}{"name":"{{ s.name|escapejs }}","class":"{{ s.class|escapejs }}","section":"{{ s.section|escapejs }}","roll":"{{ s.roll|escapejs }}","avg_pct":{{ s.avg_pct }},"student_id":{{ s.student_id }},"risk":"low"}{% if not forloop.last %},{% endif %}{% endfor %}],
+    "all":    [{% for s in buckets.all %}{"name":"{{ s.name|escapejs }}","class":"{{ s.class|escapejs }}","section":"{{ s.section|escapejs }}","roll":"{{ s.roll|escapejs }}","avg_pct":{{ s.avg_pct }},"student_id":{{ s.student_id }},"risk":"{{ s.risk|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]
+  }{% if not forloop.last %},{% endif %}
+{% endfor %}
+};
+
+var currentClass = null;
+var currentRiskFilter = 'all';
+
+function openClassDrillDown(className, highCount, avgPct) {
+  currentClass = className;
+  currentRiskFilter = 'all';
+  document.getElementById('classModalTitle').innerHTML =
+    '<i class="bi bi-building me-2" style="color:#a5b4fc;"></i>' + className + ' — Student Detail';
+  document.getElementById('classModalSubtitle').textContent =
+    'Predicted avg: ' + avgPct + '% · ' + highCount + ' high risk student(s)';
+  // Reset tabs
+  ['all','high','medium','low'].forEach(function(r){
+    document.getElementById('clsTab-'+r).classList.toggle('active', r === 'all');
+  });
+  renderClassStudents('all');
+  var modal = new bootstrap.Modal(document.getElementById('classDetailModal'));
+  modal.show();
+}
+
+function filterClassModal(risk) {
+  currentRiskFilter = risk;
+  ['all','high','medium','low'].forEach(function(r){
+    document.getElementById('clsTab-'+r).classList.toggle('active', r === risk);
+  });
+  renderClassStudents(risk);
+}
+
+function renderClassStudents(risk) {
+  var container = document.getElementById('classStudentList');
+  var countLine = document.getElementById('clsCountLine');
+  if (!currentClass || !CLASS_DATA[currentClass]) {
+    container.innerHTML = '<p style="color:#475569;">No data for this class.</p>';
+    countLine.textContent = '';
+    return;
+  }
+  var students = CLASS_DATA[currentClass][risk] || [];
+  countLine.textContent = students.length + ' student' + (students.length !== 1 ? 's' : '') + ' shown';
+
+  if (students.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:24px;color:#4ade80;"><i class="bi bi-check-circle-fill" style="font-size:1.4rem;display:block;margin-bottom:6px;"></i><div style="font-size:.85rem;font-weight:600;">No students in this category</div></div>';
+    return;
+  }
+
+  var DETAIL_BASE = "{% url 'analytics:student_detail' 0 %}".replace('/0/', '/');
+  var riskColors = {high:'#ef4444', medium:'#f59e0b', low:'#22c55e'};
+  var riskBgs    = {high:'rgba(239,68,68,.18)', medium:'rgba(245,158,11,.18)', low:'rgba(74,222,128,.15)'};
+  var riskLabels = {high:'HIGH', medium:'MED', low:'LOW'};
+
+  var html = '';
+  students.forEach(function(s) {
+    var pctColor = s.avg_pct < 40 ? '#f87171' : s.avg_pct < 60 ? '#fbbf24' : '#4ade80';
+    html += '<div class="student-row student-row-' + s.risk + '">' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-weight:600;color:#e2e8f0;font-size:.88rem;">' + s.name + '</div>' +
+        '<div style="font-size:.72rem;color:#64748b;margin-top:1px;">' +
+          s.class + ' &nbsp;·&nbsp; Sec ' + s.section + ' &nbsp;·&nbsp; Roll ' + s.roll +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:7px;flex-shrink:0;margin-left:10px;">' +
+        '<span style="font-size:.85rem;font-weight:800;color:' + pctColor + ';">' + s.avg_pct + '%</span>' +
+        '<span style="background:' + riskBgs[s.risk] + ';color:' + riskColors[s.risk] + ';padding:2px 7px;border-radius:5px;font-size:.62rem;font-weight:700;">' + riskLabels[s.risk] + '</span>' +
+        '<a href="' + DETAIL_BASE + s.student_id + '/" class="btn-view" style="font-size:.72rem;padding:4px 10px;"><i class="bi bi-robot me-1"></i>AI Report</a>' +
+      '</div>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+}
+
+// ── Charts ────────────────────────────────────────────────────────────────
+(function(){
+  var ctx=document.getElementById('gpaChart');if(!ctx)return;
+  var labels=[{% for c in principal_data.gpa_chart.labels %}"{{ c }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+  var curr=[{% for v in principal_data.gpa_chart.current_gpas %}{{ v }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  var pred=[{% for v in principal_data.gpa_chart.predicted_gpas %}{{ v }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  new Chart(ctx.getContext('2d'),{type:'bar',data:{labels:labels,datasets:[{label:'Current GPA',data:curr,backgroundColor:'rgba(99,102,241,0.7)',borderRadius:5,borderSkipped:false},{label:'Predicted GPA',data:pred,backgroundColor:'rgba(6,182,212,0.7)',borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8'}},tooltip:{backgroundColor:'#1e293b',titleColor:'#f1f5f9',bodyColor:'#94a3b8'}},scales:{x:{grid:{display:false},ticks:{color:'#475569'}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#475569'},beginAtZero:true,max:4.0}}}});
+})();
+(function(){
+  var ctx=document.getElementById('riskStackChart');if(!ctx)return;
+  var labels=[{% for c in principal_data.risk_chart.labels %}"{{ c }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+  var high=[{% for v in principal_data.risk_chart.high %}{{ v }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  var medium=[{% for v in principal_data.risk_chart.medium %}{{ v }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  var low=[{% for v in principal_data.risk_chart.low %}{{ v }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  new Chart(ctx.getContext('2d'),{type:'bar',data:{labels:labels,datasets:[{label:'High Risk',data:high,backgroundColor:'rgba(248,113,113,0.8)',stack:'risk'},{label:'Medium Risk',data:medium,backgroundColor:'rgba(251,191,36,0.8)',stack:'risk'},{label:'Low Risk',data:low,backgroundColor:'rgba(74,222,128,0.8)',stack:'risk'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8'}},tooltip:{backgroundColor:'#1e293b',titleColor:'#f1f5f9',bodyColor:'#94a3b8'}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:'#475569'}},y:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#475569'},beginAtZero:true}}}});
+})();
+</script>
+</body>
+</html>

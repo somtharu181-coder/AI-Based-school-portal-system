@@ -1,0 +1,36 @@
+{% load static %}<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Create Assignment</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>*{box-sizing:border-box;}body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;margin:0;}
+.ph{background:linear-gradient(135deg,#1e1b4b,#1e3a5f,#0f172a);padding:20px 32px;border-bottom:1px solid #1e40af;margin-bottom:24px;}
+.cd{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:24px;}
+.inp{background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:8px;padding:9px 12px;font-size:.875rem;width:100%;}
+.inp:focus{outline:none;border-color:#4f46e5;}.lbl{font-size:.8rem;color:#94a3b8;margin-bottom:5px;display:block;font-weight:600;}
+</style></head><body>
+<div class="ph d-flex align-items-center gap-3">
+  <a href="{% url 'assignments:teacher_dashboard' %}" style="background:#1e293b;color:#94a3b8;border:1px solid #334155;padding:7px 16px;border-radius:9px;text-decoration:none;font-size:.82rem;">← Back</a>
+  <h4 style="margin:0;font-size:1.1rem;font-weight:800;color:white;">Create Assignment</h4>
+</div>
+<div class="container pb-5" style="max-width:700px;">
+  {% for msg in messages %}<div class="alert alert-{% if msg.tags == 'error' %}danger{% else %}success{% endif %} mb-3" style="border-radius:10px;">{{ msg }}</div>{% endfor %}
+  <div class="cd">
+    <form method="POST">{% csrf_token %}
+      <div class="mb-3"><label class="lbl">Subject</label>
+        <select class="inp" name="class_subject" required>
+          <option value="">-- Select Subject --</option>
+          {% for cs in subjects %}<option value="{{ cs.id }}">{{ cs.class_obj.name }} — {{ cs.subject.name }}</option>{% endfor %}
+        </select></div>
+      <div class="mb-3"><label class="lbl">Section</label>
+        <select class="inp" name="section" required>
+          <option value="">-- Select Section --</option>
+          {% for sec in sections %}<option value="{{ sec.id }}">{{ sec.class_obj.name }} — {{ sec.name }}</option>{% endfor %}
+        </select></div>
+      <div class="mb-3"><label class="lbl">Title</label><input class="inp" name="title" placeholder="Assignment title" required></div>
+      <div class="mb-3"><label class="lbl">Description / Instructions</label><textarea class="inp" name="description" rows="5" required></textarea></div>
+      <div class="row g-3 mb-4">
+        <div class="col-md-6"><label class="lbl">Due Date</label><input class="inp" type="date" name="due_date" required></div>
+        <div class="col-md-6"><label class="lbl">Max Marks</label><input class="inp" type="number" name="max_marks" value="10" min="1"></div>
+      </div>
+      <button type="submit" style="background:#4f46e5;color:white;border:none;padding:11px 24px;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;width:100%;">Create Assignment</button>
+    </form>
+  </div>
+</div></body></html>

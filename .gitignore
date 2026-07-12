@@ -1,0 +1,34 @@
+# Virtual Environment
+venv/
+voicenv/
+env/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Database
+db.sqlite3
+db.sqlite3-journal
+
+# Environment Variables
+.env
+
+# Uploaded Files
+media/
+
+# Collected Static Files
+staticfiles/
+
+# IDE
+.vscode/
+.idea/
+.Kiro/
+
+# Logs
+*.log
+
+# OS Files
+Thumbs.db
+.DS_Store

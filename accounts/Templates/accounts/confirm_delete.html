@@ -1,0 +1,40 @@
+{% extends "accounts/base.html" %}
+
+{% block content %}
+
+<div style="max-width:480px;margin:0 auto;">
+    <div style="background:white;border-radius:18px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.09);border:1px solid #e2e8f0;">
+
+        <!-- Danger Header -->
+        <div style="background:linear-gradient(135deg,#7f1d1d,#b91c1c,#ef4444);padding:28px;text-align:center;color:white;">
+            <div style="width:64px;height:64px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.8rem;">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h3 style="font-size:1.3rem;font-weight:800;margin:0;">Confirm Delete</h3>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:28px;">
+            <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:14px 18px;margin-bottom:20px;text-align:center;">
+                <strong style="font-size:1rem;color:#991b1b;font-weight:700;">{{ user.username }}</strong>
+            </div>
+            <p style="color:#64748b;font-size:.875rem;text-align:center;margin-bottom:24px;">
+                Are you sure you want to permanently delete this user? This action <strong>cannot be undone</strong>.
+            </p>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="d-flex gap-3">
+                    <button type="submit" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;border-radius:10px;padding:12px 24px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;flex:1;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(239,68,68,.4)';" onmouseout="this.style.transform='';this.style.boxShadow='';">
+                        <i class="bi bi-trash-fill me-1"></i>Yes, Delete
+                    </button>
+                    <a href="{% url 'accounts:user_list' %}" style="background:#f1f5f9;color:#64748b;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 24px;font-size:.9rem;font-weight:600;text-decoration:none;display:inline-block;transition:all .2s;text-align:center;flex:1;">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

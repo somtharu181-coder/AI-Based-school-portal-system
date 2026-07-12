@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Scholaro ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root{--sw:260px;--bg:#f1f5f9;--sm:0 1px 3px rgba(0,0,0,.08);--md:0 4px 16px rgba(0,0,0,.08);--lg:0 10px 40px rgba(0,0,0,.1);--tr:all .25s cubic-bezier(.4,0,.2,1);}
+        *{box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:var(--bg);margin:0;display:flex;min-height:100vh;}
+        .sidebar{width:var(--sw);background:linear-gradient(180deg,#1e1b4b,#16133a);height:100vh;position:fixed;left:0;top:0;z-index:260;overflow-y:auto;display:flex;flex-direction:column;box-shadow:4px 0 20px rgba(0,0,0,.2);}
+        .sb-brand{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:12px;}
+        .sb-icon{width:42px;height:42px;background:linear-gradient(135deg,#4f46e5,#818cf8);border-radius:12px;display:flex;align-items:center;justify-content:center;}
+        .sb-icon i{color:white;font-size:1.2rem;}
+        .sb-text{color:white;font-weight:700;font-size:1rem;line-height:1.2;}
+        .sb-text small{color:rgba(165,180,252,.7);font-weight:400;font-size:.72rem;display:block;}
+        .sb-search{padding:10px 12px 4px;}
+        .sb-search input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 10px;font-size:.78rem;color:rgba(255,255,255,.75);font-family:'Inter',sans-serif;outline:none;}
+        .sb-search input::placeholder{color:rgba(255,255,255,.35);}
+        .sb-search input:focus{border-color:rgba(165,180,252,.4);background:rgba(255,255,255,.1);}
+        .sb-nav{padding:4px 12px 16px;flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#334155 transparent;}
+        .sb-nav::-webkit-scrollbar{width:4px;}
+        .sb-nav::-webkit-scrollbar-thumb{background:#2d3748;border-radius:4px;}
+        .nav-lbl{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(165,180,252,.45);padding:8px 12px 6px;margin-top:8px;}
+        .sb-link{display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:2px;color:rgba(255,255,255,.72);text-decoration:none;border-radius:10px;font-size:.875rem;font-weight:500;transition:var(--tr);}
+        .sb-link:hover{background:rgba(79,70,229,.3);color:white;transform:translateX(3px);}
+        .sb-link.active{background:rgba(79,70,229,.45);color:white;box-shadow:0 0 0 1px rgba(99,102,241,.35);}
+        .sb-link.hidden{display:none;}
+        .li{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem;}
+        .sb-foot{padding:16px 12px;border-top:1px solid rgba(255,255,255,.07);}
+        .main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+        /* ── Topbar ── */
+        .topbar{background:white;padding:0 28px;height:64px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--sm);position:sticky;top:0;z-index:200;}
+        .topbar-title{font-size:1.1rem;font-weight:800;color:#1e293b;margin:0;}
+        .topbar-sub{font-size:.72rem;color:#64748b;margin:0;}
+        .tb-right{display:flex;align-items:center;gap:10px;}
+        .tb-btn{width:36px;height:36px;border-radius:9px;border:1.5px solid #e2e8f0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--tr);color:#64748b;text-decoration:none;position:relative;}
+        .tb-btn:hover{background:#ede9fe;border-color:#c4b5fd;color:#4f46e5;}
+        .tb-badge{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:.55rem;font-weight:800;border-radius:99px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid #fff;}
+        .tb-user-wrap{position:relative;}
+        .tb-user{display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;transition:var(--tr);background:transparent;}
+        .tb-user:hover{background:#f8fafc;border-color:#c4b5fd;}
+        .av{width:32px;height:32px;background:linear-gradient(135deg,#4f46e5,#818cf8);border-radius:9px;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:.8rem;flex-shrink:0;}
+        .tb-uname{font-size:.82rem;font-weight:600;color:#1e293b;}
+        .tb-role-badge{font-size:.65rem;background:#ede9fe;color:#5b21b6;padding:1px 7px;border-radius:4px;font-weight:600;}
+        /* dropdown */
+        .tb-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.12);min-width:210px;padding:6px;z-index:300;display:none;}
+        .tb-user-wrap:focus-within .tb-dropdown,.tb-dropdown:hover{display:block;}
+        .tb-dd-head{padding:10px 12px;border-bottom:1px solid #f1f5f9;margin-bottom:4px;}
+        .tb-dd-name{font-size:.875rem;font-weight:700;color:#1e293b;}
+        .tb-dd-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:500;color:#1e293b;cursor:pointer;transition:var(--tr);border:none;width:100%;background:transparent;font-family:'Inter',sans-serif;text-align:left;}
+        .tb-dd-item:hover{background:#f1f5f9;}
+        .tb-dd-item.danger{color:#dc2626;}
+        .tb-dd-item.danger:hover{background:#fef2f2;}
+        /* ── Stat cards ── */
+        .sc{border-radius:18px;padding:24px;color:white;position:relative;overflow:hidden;transition:var(--tr);cursor:pointer;box-shadow:var(--md);}
+        .sc:hover{transform:translateY(-5px);box-shadow:0 14px 48px rgba(0,0,0,.18);}
+        .sc::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.1);}
+        .sc::after{content:'';position:absolute;bottom:-40px;right:20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.07);}
+        .si{width:48px;height:48px;background:rgba(255,255,255,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:16px;position:relative;z-index:1;transition:transform .2s;}
+        .sc:hover .si{transform:scale(1.1);}
+        .sv{font-size:2.2rem;font-weight:800;line-height:1;position:relative;z-index:1;}
+        .sl{font-size:.85rem;opacity:.85;margin-top:4px;font-weight:500;position:relative;z-index:1;}
+        .sh{font-size:.68rem;opacity:.6;margin-top:6px;position:relative;z-index:1;display:flex;align-items:center;gap:4px;}
+        .c-blue{background:linear-gradient(135deg,#4f46e5,#6366f1);}
+        .c-green{background:linear-gradient(135deg,#10b981,#34d399);}
+        .c-purple{background:linear-gradient(135deg,#8b5cf6,#a78bfa);}
+        .c-orange{background:linear-gradient(135deg,#f59e0b,#fbbf24);}
+        .c-teal{background:linear-gradient(135deg,#0891b2,#06b6d4);}
+        .c-rose{background:linear-gradient(135deg,#e11d48,#f43f5e);}
+        .c-indigo{background:linear-gradient(135deg,#3730a3,#4f46e5);}
+        .cc{background:white;border-radius:14px;padding:24px;box-shadow:var(--sm);border:1px solid #e2e8f0;transition:var(--tr);}
+        .cc:hover{box-shadow:var(--md);}
+        .cc-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #e2e8f0;}
+        .cc-ttl{font-size:1rem;font-weight:700;color:#1e293b;}
+        .qa{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;text-decoration:none;font-size:.82rem;font-weight:500;transition:var(--tr);border:1.5px solid transparent;position:relative;}
+        .qa:hover{transform:translateY(-1px);box-shadow:var(--md);}
+        .qa::after{content:'→';position:absolute;right:12px;opacity:0;transition:var(--tr);font-size:.8rem;}
+        .qa:hover::after{opacity:1;right:8px;}
+        .qa-p{background:rgba(79,70,229,.08);color:#4f46e5;border-color:rgba(79,70,229,.2);}
+        .qa-p:hover{background:#4f46e5;color:white;}
+        .qa-s{background:rgba(16,185,129,.08);color:#10b981;border-color:rgba(16,185,129,.2);}
+        .qa-s:hover{background:#10b981;color:white;}
+        .qa-w{background:rgba(245,158,11,.08);color:#d97706;border-color:rgba(245,158,11,.2);}
+        .qa-w:hover{background:#f59e0b;color:white;}
+        .qa-i{background:rgba(6,182,212,.08);color:#0891b2;border-color:rgba(6,182,212,.2);}
+        .qa-i:hover{background:#06b6d4;color:white;}
+        .qa-d{background:rgba(30,27,75,.08);color:#1e1b4b;border-color:rgba(30,27,75,.2);}
+        .qa-d:hover{background:#1e1b4b;color:white;}
+        .qa-sec{background:rgba(100,116,139,.08);color:#475569;border-color:rgba(100,116,139,.2);}
+        .qa-sec:hover{background:#475569;color:white;}
+        .qa-ai{background:rgba(236,72,153,.08);color:#db2777;border-color:rgba(236,72,153,.2);}
+        .qa-ai:hover{background:#ec4899;color:white;}
+        .ch{position:relative;height:260px;}
+        .pb{padding:28px;flex:1;}
+        .modal-dark .modal-content{background:#1e293b;border:1px solid #334155;border-radius:16px;color:#e2e8f0;}
+        .modal-dark .modal-header{border-bottom:1px solid #334155;padding:16px 22px;}
+        .modal-dark .modal-title{font-weight:700;color:#e2e8f0;font-size:.95rem;}
+        .modal-dark .modal-body{padding:18px 22px;max-height:70vh;overflow-y:auto;}
+        .modal-dark .btn-close{filter:invert(1);}
+        .pi{background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px 14px;margin-bottom:8px;transition:var(--tr);}
+        .pi:hover{border-color:#4f46e5;transform:translateX(3px);}
+        .pi-t{font-weight:600;color:#e2e8f0;font-size:.875rem;}
+        .pi-s{font-size:.72rem;color:#64748b;margin-top:2px;}
+        .bc{background:#166534;color:#bbf7d0;padding:2px 8px;border-radius:6px;font-size:.68rem;font-weight:700;}
+        .bi2{background:#1e293b;color:#64748b;padding:2px 8px;border-radius:6px;font-size:.68rem;font-weight:700;}
+        ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px;}
+    </style>
+</head>
+<body>
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-icon"><i class="bi bi-mortarboard-fill"></i></div>
+    <div class="sb-text">Smart Result Analysis<small>School Management</small></div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-section-lbl" style="font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(165,180,252,.45);padding:10px 12px 5px;">Search</div>
+    <div style="padding:0 10px 8px;">
+      <input id="sbSearch" type="text" placeholder="Search menu…" oninput="filterSidebar(this.value)"
+             style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 10px;font-size:.78rem;color:rgba(255,255,255,.75);font-family:'Inter',sans-serif;outline:none;">
+    </div>
+    <div class="nav-lbl">Main</div>
+    <a href="{% url 'accounts:dashboard' %}" class="sb-link active"><div class="li" style="background:rgba(79,70,229,.25);"><i class="bi bi-speedometer2" style="color:#a5b4fc;"></i></div>Dashboard</a>
+    <a href="{% url 'accounts:user_list' %}" class="sb-link"><div class="li" style="background:rgba(99,102,241,.2);"><i class="bi bi-people-fill" style="color:#a5b4fc;"></i></div>Manage Users</a>
+    <div class="nav-lbl">Academic</div>
+    <a href="{% url 'students:student_list' %}" class="sb-link"><div class="li" style="background:rgba(16,185,129,.2);"><i class="bi bi-mortarboard" style="color:#6ee7b7;"></i></div>Students</a>
+    <a href="{% url 'staff:staff_list' %}" class="sb-link"><div class="li" style="background:rgba(245,158,11,.2);"><i class="bi bi-person-badge" style="color:#fcd34d;"></i></div>Staff</a>
+    <a href="{% url 'academics:academic_dashboard' %}" class="sb-link"><div class="li" style="background:rgba(139,92,246,.2);"><i class="bi bi-book-fill" style="color:#c4b5fd;"></i></div>Academics</a>
+    <a href="{% url 'academics:create_academic_year' %}" class="sb-link"><div class="li" style="background:rgba(6,182,212,.2);"><i class="bi bi-calendar-plus" style="color:#67e8f9;"></i></div>Academic Year</a>
+    <a href="{% url 'academics:manage_classes' %}" class="sb-link"><div class="li" style="background:rgba(225,29,72,.2);"><i class="bi bi-building-fill" style="color:#fda4af;"></i></div>Manage Classes</a>
+    <a href="{% url 'academics:manage_sections' %}" class="sb-link"><div class="li" style="background:rgba(55,48,163,.2);"><i class="bi bi-grid-3x3-gap-fill" style="color:#a5b4fc;"></i></div>Manage Sections</a>
+    <a href="{% url 'academics:manage_subjects' %}" class="sb-link"><div class="li" style="background:rgba(139,92,246,.2);"><i class="bi bi-book-fill" style="color:#c4b5fd;"></i></div>Subjects Manage</a>
+    <div class="nav-lbl">Bulk Upload</div>
+    <a href="{% url 'academics:bulk_upload_students' %}" class="sb-link"><div class="li" style="background:rgba(16,185,129,.2);"><i class="bi bi-cloud-upload" style="color:#6ee7b7;"></i></div>Upload Students</a>
+    <a href="{% url 'academics:bulk_upload_marks' %}" class="sb-link"><div class="li" style="background:rgba(245,158,11,.2);"><i class="bi bi-cloud-upload" style="color:#fcd34d;"></i></div>Upload Marks</a>
+    <a href="{% url 'academics:bulk_upload_staff' %}" class="sb-link"><div class="li" style="background:rgba(139,92,246,.2);"><i class="bi bi-cloud-upload" style="color:#c4b5fd;"></i></div>Upload Staff</a>
+    <a href="{% url 'attendance:mark_student_attendance' %}" class="sb-link"><div class="li" style="background:rgba(6,182,212,.2);"><i class="bi bi-calendar-check" style="color:#67e8f9;"></i></div>Attendance</a>
+    <div class="nav-lbl">Tools</div>
+    <a href="{% url 'analytics:analytics_dashboard' %}" class="sb-link"><div class="li" style="background:rgba(236,72,153,.2);"><i class="bi bi-robot" style="color:#f9a8d4;"></i></div>AI Analysis</a>
+    <a href="{% url 'analytics:teacher_analytics' %}" class="sb-link"><div class="li" style="background:rgba(99,102,241,.2);"><i class="bi bi-person-badge-fill" style="color:#a5b4fc;"></i></div>Teacher View</a>
+    <a href="{% url 'analytics:principal_analytics' %}" class="sb-link"><div class="li" style="background:rgba(139,92,246,.2);"><i class="bi bi-building" style="color:#c4b5fd;"></i></div>Principal View</a>
+    <a href="{% url 'reporting_system:reporting_dashboard' %}" class="sb-link"><div class="li" style="background:rgba(234,179,8,.2);"><i class="bi bi-file-earmark-bar-graph" style="color:#fde047;"></i></div>Reports</a>
+    <a href="{% url 'accounts:create_student_accounts' %}" class="sb-link"><div class="li" style="background:rgba(79,70,229,.2);"><i class="bi bi-key-fill" style="color:#a5b4fc;"></i></div>Student Accounts</a>
+    <a href="{% url 'accounts:create_parent_account' %}" class="sb-link"><div class="li" style="background:rgba(16,185,129,.2);"><i class="bi bi-people-fill" style="color:#6ee7b7;"></i></div>Parent Accounts</a>
+    <a href="{% url 'notifications:send' %}" class="sb-link"><div class="li" style="background:rgba(99,102,241,.2);"><i class="bi bi-bell-fill" style="color:#a5b4fc;"></i></div>Send Notification</a>
+    <a href="{% url 'parent_portal:create_meeting' %}" class="sb-link"><div class="li" style="background:rgba(6,182,212,.2);"><i class="bi bi-camera-video" style="color:#67e8f9;"></i></div>Schedule Meeting</a>
+    <a href="{% url 'accounts:change_credentials' %}" class="sb-link"><div class="li" style="background:rgba(100,116,139,.2);"><i class="bi bi-shield-lock" style="color:#94a3b8;"></i></div>Credentials</a>
+    <a href="{% url 'audit_log:list' %}" class="sb-link"><div class="li" style="background:rgba(239,68,68,.2);"><i class="bi bi-shield-exclamation" style="color:#fca5a5;"></i></div>Audit Log</a>
+  </div>
+  <div class="sb-foot">
+    <form method="POST" action="{% url 'accounts:logout' %}">{% csrf_token %}
+      <button type="submit" style="width:100%;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:10px;padding:9px;font-size:.85rem;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Inter',sans-serif;">
+        <i class="bi bi-box-arrow-right"></i> Logout
+      </button>
+    </form>
+  </div>
+</div>
+<!-- MAIN CONTENT -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Admin Dashboard</div>
+      <div class="topbar-sub">Welcome back — here's your system overview</div>
+    </div>
+    <div class="tb-right">
+      <!-- Notification bell -->
+      <a href="{% url 'notifications:inbox' %}" class="tb-btn">
+        <i class="bi bi-bell-fill" style="font-size:.9rem;"></i>
+        {% if admin_unread and admin_unread > 0 %}<span class="tb-badge">{{ admin_unread }}</span>{% endif %}
+      </a>
+      <!-- User dropdown -->
+      <div class="tb-user-wrap" tabindex="0">
+        <div class="tb-user">
+          <div class="av">{{ request.user.username|first|upper }}</div>
+          <div class="d-none d-md-block">
+            <div class="tb-uname">{{ request.user.username }}</div>
+          </div>
+          <i class="bi bi-chevron-down" style="font-size:.65rem;color:#94a3b8;"></i>
+        </div>
+        <div class="tb-dropdown">
+          <div class="tb-dd-head">
+            <div class="tb-dd-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+            <span class="tb-role-badge">Administrator</span>
+          </div>
+          <a href="{% url 'accounts:user_list' %}" class="tb-dd-item">
+            <i class="bi bi-people-fill" style="color:#4f46e5;"></i> Manage Users
+          </a>
+          <a href="{% url 'accounts:change_credentials' %}" class="tb-dd-item">
+            <i class="bi bi-shield-lock" style="color:#10b981;"></i> Security Settings
+          </a>
+          <a href="{% url 'audit_log:list' %}" class="tb-dd-item">
+            <i class="bi bi-shield-exclamation" style="color:#f59e0b;"></i> Audit Log
+          </a>
+          <div style="height:1px;background:#f1f5f9;margin:4px 0;"></div>
+          <form method="POST" action="{% url 'accounts:logout' %}" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="tb-dd-item danger">
+              <i class="bi bi-box-arrow-right"></i> Logout
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pb">
+    <!-- ROW 1: Core Stats -->
+    <div class="row g-4 mb-3">
+      <div class="col-xl-3 col-md-6">
+        <div class="sc c-blue" data-bs-toggle="modal" data-bs-target="#mUsers">
+          <div class="si"><i class="bi bi-people-fill"></i></div>
+          <div class="sv">{{ total_users|default:0 }}</div>
+          <div class="sl">Total Users</div>
+          <div class="sh"><i class="bi bi-cursor-fill me-1"></i>Click to manage</div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-md-6">
+        <div class="sc c-green" data-bs-toggle="modal" data-bs-target="#mStudents">
+          <div class="si"><i class="bi bi-mortarboard-fill"></i></div>
+          <div class="sv">{{ total_students|default:0 }}</div>
+          <div class="sl">Active Students</div>
+          <div class="sh"><i class="bi bi-cursor-fill me-1"></i>Click to view</div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-md-6">
+        <div class="sc c-purple" data-bs-toggle="modal" data-bs-target="#mStaff">
+          <div class="si"><i class="bi bi-person-badge-fill"></i></div>
+          <div class="sv">{{ total_staff|default:0 }}</div>
+          <div class="sl">Staff Members</div>
+          <div class="sh"><i class="bi bi-cursor-fill me-1"></i>Click to view</div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-md-6">
+        <div class="sc c-orange" style="cursor:default;">
+          <div class="si"><i class="bi bi-calendar-check-fill"></i></div>
+          <div class="sv">{{ attendance_today|default:0 }}</div>
+          <div class="sl">Attendance Today</div>
+          <div class="sh"><i class="bi bi-clock me-1"></i>Present today</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 2: Academic Overview -->
+    <div class="row g-4 mb-4">
+      <div class="col-xl-3 col-md-6">
+        <div class="sc c-teal" data-bs-toggle="modal" data-bs-target="#mAcadYears">
+          <div class="si"><i class="bi bi-calendar2-range-fill"></i></div>
+          <div class="sv">{{ total_academic_years|default:0 }}</div>
+          <div class="sl">Academic Years</div>
+          <div class="sh"><i class="bi bi-cursor-fill me-1"></i>Click to manage</div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-md-6">
+        <div class="sc c-rose" data-bs-toggle="modal" data-bs-target="#mClasses">
+          <div class="si"><i class="bi bi-building-fill"></i></div>
+          <div class="sv">{{ total_classes|default:0 }}</div>
+          <div class="sl">Classes</div>
+          <div class="sh"><i class="bi bi-cursor-fill me-1"></i>Click to view</div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-md-6">
+        <div class="sc c-indigo" data-bs-toggle="modal" data-bs-target="#mSections">
+          <div class="si"><i class="bi bi-grid-3x3-gap-fill"></i></div>
+          <div class="sv">{{ total_sections|default:0 }}</div>
+          <div class="sl">Sections</div>
+          <div class="sh"><i class="bi bi-cursor-fill me-1"></i>Click to view</div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-md-6">
+        <div class="sc" style="background:linear-gradient(135deg,#0f766e,#14b8a6);" data-bs-toggle="modal" data-bs-target="#mAnalytics">
+          <div class="si"><i class="bi bi-robot"></i></div>
+          <div class="sv" style="font-size:1.4rem;">AI</div>
+          <div class="sl">Analytics Views</div>
+          <div class="sh"><i class="bi bi-cursor-fill me-1"></i>Teacher &amp; Principal</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHART + QUICK ACTIONS -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-7">
+        <div class="cc h-100">
+          <div class="cc-hdr">
+            <div>
+              <div class="cc-ttl">User Distribution by Role</div>
+              <div style="font-size:.78rem;color:#94a3b8;margin-top:2px;">System-wide breakdown</div>
+            </div>
+            <span style="background:rgba(79,70,229,.1);color:#4f46e5;font-size:.75rem;font-weight:600;padding:4px 10px;border-radius:20px;">Live</span>
+          </div>
+          <div class="ch"><canvas id="roleChart"></canvas></div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="cc h-100">
+          <div class="cc-hdr">
+            <div class="cc-ttl"><i class="bi bi-lightning-charge-fill" style="color:#f59e0b;"></i> Quick Actions</div>
+          </div>
+          <div class="d-flex flex-column gap-2" style="overflow-y:auto;max-height:400px;">
+            <a href="{% url 'accounts:create_user' %}" class="qa qa-p"><i class="bi bi-person-plus-fill"></i> Create New User</a>
+            <a href="{% url 'accounts:user_list' %}" class="qa qa-d"><i class="bi bi-list-ul"></i> View All Users</a>
+            <a href="{% url 'students:create_student' %}" class="qa qa-s"><i class="bi bi-mortarboard-fill"></i> Add Student</a>
+            <a href="{% url 'academics:bulk_upload_students' %}" class="qa qa-s"><i class="bi bi-cloud-upload"></i> Bulk Upload Students</a>
+            <a href="{% url 'academics:bulk_upload_marks' %}" class="qa qa-w"><i class="bi bi-cloud-upload"></i> Bulk Upload Marks</a>
+            <a href="{% url 'academics:bulk_upload_staff' %}" class="qa qa-sec"><i class="bi bi-cloud-upload"></i> Bulk Upload Staff</a>
+            <a href="{% url 'academics:manage_classes' %}" class="qa qa-i"><i class="bi bi-building-fill"></i> Manage Classes</a>
+            <a href="{% url 'academics:manage_sections' %}" class="qa qa-i"><i class="bi bi-grid-3x3-gap-fill"></i> Manage Sections</a>
+            <a href="{% url 'academics:manage_subjects' %}" class="qa qa-i"><i class="bi bi-book-fill"></i> Subjects Manage</a>
+            <a href="{% url 'academics:create_academic_year' %}" class="qa qa-i"><i class="bi bi-calendar-plus"></i> New Academic Year</a>
+            <a href="{% url 'attendance:mark_student_attendance' %}" class="qa qa-i"><i class="bi bi-calendar-check-fill"></i> Mark Attendance</a>
+            <a href="{% url 'analytics:analytics_dashboard' %}" class="qa qa-ai"><i class="bi bi-robot"></i> AI Analysis</a>
+            <a href="{% url 'accounts:create_student_accounts' %}" class="qa qa-sec"><i class="bi bi-key-fill"></i> Create Student Accounts</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ══ COMMUNICATIONS ROW ═══════════════════════════════════════════════ -->
+    <div class="row g-4 mb-4">
+
+      <!-- Notification Centre -->
+      <div class="col-lg-5">
+        <div class="cc h-100" style="display:flex;flex-direction:column;">
+          <div class="cc-hdr">
+            <div>
+              <div class="cc-ttl">
+                <i class="bi bi-bell-fill me-1" style="color:#a5b4fc;"></i> Notification Centre
+                {% if admin_unread and admin_unread > 0 %}
+                <span style="background:#ef4444;color:#fff;padding:2px 7px;border-radius:10px;font-size:.62rem;margin-left:6px;">{{ admin_unread }} new</span>
+                {% endif %}
+              </div>
+              <div style="font-size:.73rem;color:#94a3b8;margin-top:2px;">
+                <strong style="color:#4ade80;">{{ notif_sent_week|default:0 }}</strong> sent this week &nbsp;&middot;&nbsp;
+                <strong style="color:#a5b4fc;">{{ notif_total_sent|default:0 }}</strong> total
+              </div>
+            </div>
+            <a href="{% url 'notifications:send' %}"
+               style="background:linear-gradient(135deg,#4f46e5,#6366f1);color:#fff;padding:6px 14px;border-radius:8px;text-decoration:none;font-size:.78rem;font-weight:700;white-space:nowrap;flex-shrink:0;">
+              <i class="bi bi-send-fill me-1"></i>Compose
+            </a>
+          </div>
+
+          <!-- Auto-trigger badges -->
+          <div style="padding:12px 18px;border-bottom:1px solid #e2e8f0;">
+            <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#94a3b8;margin-bottom:8px;">
+              <i class="bi bi-robot me-1" style="color:#a5b4fc;"></i>Automatic Event Triggers
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              {% for label,desc in events_info %}
+              <div style="display:flex;align-items:center;gap:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:7px 12px;">
+                <div style="width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0;"></div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:.78rem;font-weight:700;color:#1e293b;">{{ label }}</div>
+                  <div style="font-size:.67rem;color:#64748b;">{{ desc }}</div>
+                </div>
+                <span style="background:#dcfce7;color:#16a34a;padding:2px 7px;border-radius:5px;font-size:.62rem;font-weight:700;flex-shrink:0;">Active</span>
+              </div>
+              {% empty %}
+              <div style="display:flex;flex-direction:column;gap:5px;">
+                <div style="display:flex;align-items:center;gap:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:7px 12px;">
+                  <div style="width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0;"></div>
+                  <div style="flex:1;"><div style="font-size:.78rem;font-weight:700;color:#1e293b;">Result Published</div><div style="font-size:.67rem;color:#64748b;">Notifies students &amp; parents when ExamTerm publishes</div></div>
+                  <span style="background:#dcfce7;color:#16a34a;padding:2px 7px;border-radius:5px;font-size:.62rem;font-weight:700;">Active</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:7px 12px;">
+                  <div style="width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0;"></div>
+                  <div style="flex:1;"><div style="font-size:.78rem;font-weight:700;color:#1e293b;">Meeting Scheduled</div><div style="font-size:.67rem;color:#64748b;">Notifies selected audience when a meeting is created</div></div>
+                  <span style="background:#dcfce7;color:#16a34a;padding:2px 7px;border-radius:5px;font-size:.62rem;font-weight:700;">Active</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:7px 12px;">
+                  <div style="width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0;"></div>
+                  <div style="flex:1;"><div style="font-size:.78rem;font-weight:700;color:#1e293b;">Letter Published</div><div style="font-size:.67rem;color:#64748b;">Notifies selected audience when a school letter publishes</div></div>
+                  <span style="background:#dcfce7;color:#16a34a;padding:2px 7px;border-radius:5px;font-size:.62rem;font-weight:700;">Active</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:7px 12px;">
+                  <div style="width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0;"></div>
+                  <div style="flex:1;"><div style="font-size:.78rem;font-weight:700;color:#1e293b;">Student Enrolled</div><div style="font-size:.67rem;color:#64748b;">Notifies admins when a new student profile is created</div></div>
+                  <span style="background:#dcfce7;color:#16a34a;padding:2px 7px;border-radius:5px;font-size:.62rem;font-weight:700;">Active</span>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Recent sent -->
+          <div style="padding:12px 18px;flex:1;overflow-y:auto;">
+            <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#94a3b8;margin-bottom:8px;">
+              <i class="bi bi-clock me-1"></i>Recently Sent
+            </div>
+            {% if notif_recent %}
+            {% for n in notif_recent %}
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9;">
+              <div style="width:30px;height:30px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+                background:{% if n.category == 'parent' %}rgba(74,222,128,.1){% elif n.category == 'internal' %}rgba(99,102,241,.1){% else %}rgba(245,158,11,.1){% endif %};">
+                <i class="bi {% if n.category == 'parent' %}bi-house-heart-fill{% elif n.category == 'internal' %}bi-people-fill{% else %}bi-shield-fill{% endif %}"
+                   style="font-size:.75rem;color:{% if n.category == 'parent' %}#4ade80{% elif n.category == 'internal' %}#a5b4fc{% else %}#fbbf24{% endif %};"></i>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:.82rem;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ n.title }}</div>
+                <div style="font-size:.68rem;color:#64748b;">
+                  {{ n.sender.get_full_name|default:n.sender.username|default:"System" }} &middot; {{ n.created_at|timesince }} ago
+                </div>
+              </div>
+              <span style="font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;
+                background:{% if n.priority == 'urgent' %}rgba(239,68,68,.1){% elif n.priority == 'high' %}rgba(251,146,60,.1){% elif n.priority == 'medium' %}rgba(251,191,36,.1){% else %}rgba(74,222,128,.1){% endif %};
+                color:{% if n.priority == 'urgent' %}#ef4444{% elif n.priority == 'high' %}#fb923c{% elif n.priority == 'medium' %}#ca8a04{% else %}#16a34a{% endif %};">
+                {{ n.get_priority_display }}
+              </span>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div style="text-align:center;padding:16px 0;color:#94a3b8;font-size:.82rem;">
+              <i class="bi bi-bell-slash" style="display:block;font-size:1.4rem;margin-bottom:5px;opacity:.35;"></i>No notifications sent yet
+            </div>
+            {% endif %}
+            <a href="{% url 'notifications:inbox' %}"
+               style="display:block;margin-top:10px;text-align:center;font-size:.75rem;color:#4f46e5;font-weight:600;text-decoration:none;padding:7px;background:rgba(79,70,229,.06);border-radius:8px;border:1px solid rgba(79,70,229,.14);">
+              <i class="bi bi-arrow-right me-1"></i>View All Notifications
+            </a>
+          </div>
+        </div>
+      </div><!-- /notification card -->
+
+      <!-- Communications quick-send -->
+      <div class="col-lg-7">
+        <div class="cc h-100">
+          <div class="cc-hdr">
+            <div class="cc-ttl"><i class="bi bi-broadcast me-1" style="color:#38bdf8;"></i> Communications</div>
+            <span style="font-size:.72rem;color:#64748b;">Meetings · Letters · Notifications</span>
+          </div>
+          <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;">
+
+            <a href="{% url 'notifications:send' %}" style="text-decoration:none;">
+              <div class="comm-card" style="background:linear-gradient(135deg,rgba(79,70,229,.06),rgba(99,102,241,.02));border:1.5px solid rgba(79,70,229,.18);border-radius:12px;padding:15px 18px;display:flex;align-items:center;gap:14px;transition:all .2s;"
+                   onmouseover="this.style.borderColor='#4f46e5';this.style.boxShadow='0 4px 16px rgba(79,70,229,.15)';"
+                   onmouseout="this.style.borderColor='rgba(79,70,229,.18)';this.style.boxShadow='none';">
+                <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#4f46e5,#6366f1);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(79,70,229,.3);">
+                  <i class="bi bi-send-fill" style="color:#fff;font-size:1rem;"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:700;color:#1e293b;font-size:.9rem;">Compose Notification</div>
+                  <div style="font-size:.73rem;color:#64748b;margin-top:2px;">Target parents, students, teachers, committee, or specific staff</div>
+                </div>
+                <i class="bi bi-arrow-right-circle-fill" style="color:#a5b4fc;font-size:1.1rem;flex-shrink:0;"></i>
+              </div>
+            </a>
+
+            <a href="{% url 'parent_portal:create_meeting' %}" style="text-decoration:none;">
+              <div style="background:linear-gradient(135deg,rgba(8,145,178,.06),rgba(6,182,212,.02));border:1.5px solid rgba(8,145,178,.18);border-radius:12px;padding:15px 18px;display:flex;align-items:center;gap:14px;transition:all .2s;"
+                   onmouseover="this.style.borderColor='#0891b2';this.style.boxShadow='0 4px 16px rgba(8,145,178,.15)';"
+                   onmouseout="this.style.borderColor='rgba(8,145,178,.18)';this.style.boxShadow='none';">
+                <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#0891b2,#0ea5e9);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(8,145,178,.3);">
+                  <i class="bi bi-camera-video-fill" style="color:#fff;font-size:1rem;"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:700;color:#1e293b;font-size:.9rem;">Schedule Online Meeting</div>
+                  <div style="font-size:.73rem;color:#64748b;margin-top:2px;">Select audience (parents, teachers, committee) and notify them instantly</div>
+                </div>
+                <i class="bi bi-arrow-right-circle-fill" style="color:#67e8f9;font-size:1.1rem;flex-shrink:0;"></i>
+              </div>
+            </a>
+
+            <a href="{% url 'parent_portal:publish_letter' %}" style="text-decoration:none;">
+              <div style="background:linear-gradient(135deg,rgba(217,119,6,.06),rgba(245,158,11,.02));border:1.5px solid rgba(217,119,6,.18);border-radius:12px;padding:15px 18px;display:flex;align-items:center;gap:14px;transition:all .2s;"
+                   onmouseover="this.style.borderColor='#d97706';this.style.boxShadow='0 4px 16px rgba(217,119,6,.15)';"
+                   onmouseout="this.style.borderColor='rgba(217,119,6,.18)';this.style.boxShadow='none';">
+                <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(217,119,6,.3);">
+                  <i class="bi bi-envelope-paper-fill" style="color:#fff;font-size:1rem;"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:700;color:#1e293b;font-size:.9rem;">Publish School Letter</div>
+                  <div style="font-size:.73rem;color:#64748b;margin-top:2px;">Choose recipients by role, class, section, or specific teachers</div>
+                </div>
+                <i class="bi bi-arrow-right-circle-fill" style="color:#fcd34d;font-size:1.1rem;flex-shrink:0;"></i>
+              </div>
+            </a>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;">
+              <a href="{% url 'parent_portal:meetings' %}" style="text-decoration:none;">
+                <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:9px;transition:all .2s;"
+                     onmouseover="this.style.borderColor='#94a3b8';this.style.background='#f1f5f9';"
+                     onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc';">
+                  <i class="bi bi-calendar-event" style="color:#64748b;font-size:1rem;"></i>
+                  <span style="font-size:.8rem;font-weight:600;color:#475569;">All Meetings</span>
+                </div>
+              </a>
+              <a href="{% url 'parent_portal:letters' %}" style="text-decoration:none;">
+                <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:9px;transition:all .2s;"
+                     onmouseover="this.style.borderColor='#94a3b8';this.style.background='#f1f5f9';"
+                     onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc';">
+                  <i class="bi bi-envelope-open" style="color:#64748b;font-size:1rem;"></i>
+                  <span style="font-size:.8rem;font-weight:600;color:#475569;">All Letters</span>
+                </div>
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div><!-- /communications card -->
+
+    </div><!-- /communications row -->
+
+  </div><!-- /pb -->
+</div><!-- /main -->
+
+<!-- ══════════════ MODALS ══════════════ -->
+
+<!-- MODAL: Users -->
+<div class="modal fade" id="mUsers" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-dark">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-people-fill me-2" style="color:#a5b4fc;"></i>User Management</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3 mb-3">
+          <div class="col-4">
+            <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:1.5rem;font-weight:800;color:#38bdf8;">{{ total_users }}</div>
+              <div style="font-size:.72rem;color:#64748b;">Total Users</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:1.5rem;font-weight:800;color:#4ade80;">{{ total_students }}</div>
+              <div style="font-size:.72rem;color:#64748b;">Students</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:1.5rem;font-weight:800;color:#fbbf24;">{{ total_staff }}</div>
+              <div style="font-size:.72rem;color:#64748b;">Staff</div>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex flex-column gap-2 mb-3">
+          <a href="{% url 'accounts:user_list' %}" class="qa qa-p"><i class="bi bi-list-ul"></i> View All Users</a>
+          <a href="{% url 'accounts:create_user' %}" class="qa qa-s"><i class="bi bi-person-plus-fill"></i> Create New User</a>
+          <a href="{% url 'accounts:create_student_accounts' %}" class="qa qa-w"><i class="bi bi-key-fill"></i> Create Student Accounts</a>
+        </div>
+        <!-- Reset Password -->
+        <div style="border-top:1px solid #334155;padding-top:14px;">
+          <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#f59e0b;font-weight:700;margin-bottom:10px;">
+            <i class="bi bi-key-fill me-1"></i>Reset User Password
+          </div>
+          {% for u in users_for_reset %}
+          <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <span style="font-weight:600;color:#e2e8f0;font-size:.85rem;">{{ u.username }}</span>
+              <span style="background:#1e293b;color:#64748b;padding:1px 6px;border-radius:4px;font-size:.68rem;margin-left:6px;">{{ u.role|capfirst }}</span>
+            </div>
+            <a href="{% url 'accounts:reset_user_password' u.id %}" style="background:rgba(245,158,11,.2);color:#fbbf24;padding:4px 10px;border-radius:6px;font-size:.72rem;text-decoration:none;font-weight:600;">
+              <i class="bi bi-key"></i> Reset
+            </a>
+          </div>
+          {% empty %}
+          <p style="color:#475569;font-size:.8rem;">No non-admin users found.</p>
+          {% endfor %}
+          <a href="{% url 'accounts:user_list' %}" style="display:block;text-align:center;margin-top:8px;font-size:.72rem;color:#475569;text-decoration:none;">
+            <i class="bi bi-arrow-right me-1"></i>Full user list
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Students -->
+<div class="modal fade" id="mStudents" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-dark">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-mortarboard-fill me-2" style="color:#6ee7b7;"></i>Students Overview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:14px;text-align:center;margin-bottom:14px;">
+          <div style="font-size:2rem;font-weight:800;color:#4ade80;">{{ total_students }}</div>
+          <div style="font-size:.8rem;color:#64748b;">Active Students Enrolled</div>
+        </div>
+        <div class="d-flex flex-column gap-2">
+          <a href="{% url 'students:student_list' %}" class="qa qa-s"><i class="bi bi-list-ul"></i> View All Students</a>
+          <a href="{% url 'students:create_student' %}" class="qa qa-p"><i class="bi bi-person-plus-fill"></i> Add New Student</a>
+          <a href="{% url 'academics:bulk_upload_students' %}" class="qa qa-s"><i class="bi bi-cloud-upload"></i> Bulk Upload Students (CSV)</a>
+          <a href="{% url 'academics:bulk_upload_marks' %}" class="qa qa-w"><i class="bi bi-cloud-upload"></i> Bulk Upload Marks (CSV)</a>
+          <a href="{% url 'academics:student_marks' %}" class="qa qa-i"><i class="bi bi-journal-text"></i> View Student marks</a>
+          <a href="{% url 'analytics:analytics_dashboard' %}" class="qa qa-d"><i class="bi bi-robot"></i> AI Analysis</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Staff -->
+<div class="modal fade" id="mStaff" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-dark">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-person-badge-fill me-2" style="color:#c4b5fd;"></i>Staff Overview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:14px;text-align:center;margin-bottom:14px;">
+          <div style="font-size:2rem;font-weight:800;color:#a78bfa;">{{ total_staff }}</div>
+          <div style="font-size:.8rem;color:#64748b;">Staff Members</div>
+        </div>
+        <div class="d-flex flex-column gap-2">
+          <a href="{% url 'staff:staff_list' %}" class="qa qa-w"><i class="bi bi-list-ul"></i> View All Staff</a>
+          <a href="{% url 'staff:staff_create' %}" class="qa qa-p"><i class="bi bi-person-plus-fill"></i> Add Staff Member</a>
+          <a href="{% url 'academics:bulk_upload_staff' %}" class="qa qa-sec"><i class="bi bi-cloud-upload"></i> Bulk Upload Staff (CSV)</a>
+          <a href="{% url 'academics:assign_teacher' %}" class="qa qa-i"><i class="bi bi-person-check"></i> Assign Teacher</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Academic Years -->
+<div class="modal fade" id="mAcadYears" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-dark">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-calendar2-range-fill me-2" style="color:#67e8f9;"></i>Academic Years</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% if academic_years %}
+          {% for yr in academic_years %}
+          <div class="pi">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="pi-t">{{ yr.name }}</div>
+                <div class="pi-s">{{ yr.start_date }} → {{ yr.end_date }}</div>
+              </div>
+              {% if yr.is_current %}<span class="bc">Current</span>{% else %}<span class="bi2">Inactive</span>{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="color:#475569;font-size:.875rem;">No academic years found.</p>
+        {% endif %}
+        <div class="mt-3">
+          <a href="{% url 'academics:create_academic_year' %}" class="qa qa-i"><i class="bi bi-plus-circle-fill"></i> Create New Academic Year</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Classes -->
+<div class="modal fade" id="mClasses" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-dark">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-building-fill me-2" style="color:#fda4af;"></i>Classes ({{ total_classes }})</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% if class_list %}
+          {% for cls in class_list %}
+          <div class="pi">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="pi-t">{{ cls.name }}</div>
+                <div class="pi-s">
+                  {{ cls.sections|length }} section{{ cls.sections|length|pluralize }}
+                  &nbsp;·&nbsp;
+                  <span style="color:#4ade80;font-weight:600;">{{ cls.student_count }}</span> active student{{ cls.student_count|pluralize }}
+                </div>
+              </div>
+              <a href="{% url 'academics:manage_classes' %}" style="background:rgba(79,70,229,.15);color:#a5b4fc;padding:4px 10px;border-radius:6px;font-size:.72rem;text-decoration:none;font-weight:600;">
+                <i class="bi bi-pencil"></i> Manage
+              </a>
+            </div>
+            {% if cls.sections %}
+            <div class="mt-2 d-flex flex-wrap gap-1">
+              {% for sec in cls.sections %}
+              <span style="background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:2px 7px;border-radius:5px;font-size:.7rem;">{{ sec.name }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="color:#475569;font-size:.875rem;">No Classes found.</p>
+        {% endif %}
+        <div class="mt-3 d-flex flex-column gap-2">
+          <a href="{% url 'academics:manage_classes' %}" class="qa qa-p"><i class="bi bi-gear-fill"></i> Add / Rename / Delete Classes</a>
+          <a href="{% url 'academics:manage_sections' %}" class="qa qa-s"><i class="bi bi-plus-circle-fill"></i> Add / Rename / Delete Sections</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Sections -->
+<div class="modal fade" id="mSections" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-dark">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-grid-3x3-gap-fill me-2" style="color:#a5b4fc;"></i>Sections ({{ total_sections }})</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% if section_list %}
+          {% regroup section_list by class_name as by_class %}
+          {% for group in by_class %}
+          <div style="margin-bottom:14px;">
+            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#475569;font-weight:700;margin-bottom:6px;">
+              <i class="bi bi-building me-1"></i>{{ group.grouper }}
+            </div>
+            {% for sec in group.list %}
+            <div class="pi" style="margin-bottom:5px;">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="pi-t">{{ group.grouper }} — Section {{ sec.name }}</div>
+                  <div class="pi-s"><span style="color:#4ade80;font-weight:600;">{{ sec.student_count }}</span> active student{{ sec.student_count|pluralize }}</div>
+                </div>
+                <a href="{% url 'students:student_list' %}" style="background:rgba(79,70,229,.15);color:#a5b4fc;padding:4px 10px;border-radius:6px;font-size:.72rem;text-decoration:none;font-weight:600;">
+                  <i class="bi bi-people"></i> Students
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="color:#475569;font-size:.875rem;">No sections found.</p>
+        {% endif %}
+        <div class="mt-3">
+          <a href="{% url 'academics:manage_sections' %}" class="qa qa-p"><i class="bi bi-gear-fill"></i> Add / Rename / Delete Sections</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Analytics -->
+<div class="modal fade" id="mAnalytics" tabindex="-1">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content modal-dark">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-robot me-2" style="color:#f9a8d4;"></i>Analytics Views</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p style="color:#64748b;font-size:.85rem;margin-bottom:14px;">Role-specific analytics powered by the prediction pipeline.</p>
+        <div class="d-flex flex-column gap-2">
+          <a href="{% url 'analytics:analytics_dashboard' %}" class="pi text-decoration-none" style="display:block;">
+            <div class="pi-t"><i class="bi bi-bar-chart-fill me-2" style="color:#f9a8d4;"></i>AI Analytics Dashboard</div>
+            <div class="pi-s">All students — performance, risk, recommendations</div>
+          </a>
+          <a href="{% url 'analytics:teacher_analytics' %}" class="pi text-decoration-none" style="display:block;">
+            <div class="pi-t"><i class="bi bi-person-badge-fill me-2" style="color:#a5b4fc;"></i>Teacher View</div>
+            <div class="pi-s">Subject-wise predictions, at-risk subjects, interventions</div>
+          </a>
+          <a href="{% url 'analytics:principal_analytics' %}" class="pi text-decoration-none" style="display:block;">
+            <div class="pi-t"><i class="bi bi-building me-2" style="color:#c4b5fd;"></i>Principal View</div>
+            <div class="pi-s">School-wide GPA forecast, class-wise risk distribution</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ── Role distribution chart ── */
+(function(){
+    var ctx = document.getElementById('roleChart');
+    if(!ctx) return;
+    new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['Admin', 'Staff', 'Students', 'Accountants'],
+            datasets: [{
+                label: 'Users by Role',
+                data: [{{ total_users|default:0 }}, {{ total_staff|default:0 }}, {{ total_students|default:0 }}, 1],
+                backgroundColor: ['rgba(79,70,229,.85)','rgba(245,158,11,.85)','rgba(16,185,129,.85)','rgba(139,92,246,.85)'],
+                borderRadius: 8, borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { backgroundColor: '#1e293b', titleColor: '#f1f5f9', bodyColor: '#94a3b8', padding: 12, cornerRadius: 8 }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 12 } } },
+                y: { grid: { color: 'rgba(0,0,0,.04)' }, ticks: { color: '#94a3b8', font: { size: 12 } }, beginAtZero: true }
+            }
+        }
+    });
+})();
+
+/* ── Count-up on stat cards ── */
+document.querySelectorAll('.sv').forEach(function(el){
+  var raw = el.textContent.trim();
+  var n = parseInt(raw, 10);
+  if(isNaN(n) || n === 0) return;
+  var steps = 40, step = 0;
+  var orig = raw;
+  var t = setInterval(function(){
+    step++;
+    el.textContent = Math.round(n * step / steps);
+    if(step >= steps){ el.textContent = orig; clearInterval(t); }
+  }, 800 / steps);
+});
+
+/* ── Sidebar search ── */
+function filterSidebar(q){
+  q = q.toLowerCase().trim();
+  document.querySelectorAll('.sb-link').forEach(function(link){
+    if(!q){ link.classList.remove('hidden'); return; }
+    var txt = link.textContent.toLowerCase();
+    link.classList.toggle('hidden', !txt.includes(q));
+  });
+  document.querySelectorAll('.nav-lbl').forEach(function(lbl){
+    if(!q){ lbl.style.display = ''; return; }
+    var next = lbl.nextElementSibling;
+    var anyVisible = false;
+    while(next && !next.classList.contains('nav-lbl')){
+      if(!next.classList.contains('hidden') && next.classList.contains('sb-link')) anyVisible = true;
+      next = next.nextElementSibling;
+    }
+    lbl.style.display = anyVisible ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

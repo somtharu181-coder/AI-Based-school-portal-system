@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Student Accounts — Scholaro ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5; --primary-dark: #3730a3; --primary-light: #a5b4fc;
+            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+            --body-bg: #f1f5f9; --card-bg: #ffffff;
+            --text-primary: #1e293b; --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+            --radius-md: 14px; --radius-lg: 18px;
+            --transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif; background: var(--body-bg);
+            color: var(--text-primary); min-height: 100vh; padding: 0; margin: 0;
+        }
+        .page-container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+        /* Back link */
+        .back-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: #64748b; text-decoration: none; font-size: 0.85rem; font-weight: 500;
+            margin-bottom: 20px; transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--primary); }
+
+        /* Page header card */
+        .page-header-card {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4f46e5 100%);
+            border-radius: var(--radius-lg); padding: 28px 32px; margin-bottom: 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: relative; overflow: hidden; box-shadow: var(--shadow-md);
+        }
+        .page-header-card::before {
+            content: ''; position: absolute; top: -50px; right: -50px;
+            width: 200px; height: 200px; border-radius: 50%;
+            background: rgba(165,180,252,0.1);
+        }
+        .page-header-card::after {
+            content: ''; position: absolute; bottom: -40px; left: 30%;
+            width: 150px; height: 150px; border-radius: 50%;
+            background: rgba(16,185,129,0.08);
+        }
+        .header-content { position: relative; z-index: 1; }
+        .header-icon {
+            width: 52px; height: 52px; background: rgba(255,255,255,0.15);
+            border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; color: #a5b4fc; margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .page-header-card h1 { color: white; font-size: 1.4rem; font-weight: 800; margin: 0; }
+        .page-header-card p { color: rgba(255,255,255,0.65); font-size: 0.85rem; margin: 4px 0 0; }
+        .header-back-btn {
+            position: relative; z-index: 1;
+            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+            color: white; border-radius: 10px; padding: 9px 18px; font-size: 0.85rem;
+            font-weight: 500; text-decoration: none; display: flex; align-items: center; gap: 7px;
+            transition: var(--transition); white-space: nowrap;
+        }
+        .header-back-btn:hover { background: rgba(255,255,255,0.25); color: white; }
+
+        /* Alert */
+        .alert-custom {
+            border-radius: 12px; padding: 14px 18px; margin-bottom: 20px;
+            display: flex; align-items: flex-start; gap: 10px; font-size: 0.875rem;
+            border: none;
+        }
+        .alert-success-c { background: rgba(16,185,129,0.1); color: #065f46; border-left: 4px solid #10b981; }
+        .alert-danger-c  { background: rgba(239,68,68,0.1); color: #991b1b; border-left: 4px solid #ef4444; }
+        .alert-info-c    { background: rgba(79,70,229,0.08); color: #3730a3; border-left: 4px solid #4f46e5; }
+
+        /* Info box */
+        .info-box {
+            background: rgba(245,158,11,0.08); border: 1.5px solid rgba(245,158,11,0.25);
+            border-radius: 12px; padding: 18px 20px; margin-bottom: 24px;
+            display: flex; gap: 14px; align-items: flex-start;
+        }
+        .info-box-icon {
+            width: 36px; height: 36px; background: rgba(245,158,11,0.15);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: 1rem; color: #d97706;
+        }
+        .info-box-title { font-weight: 700; color: #92400e; font-size: 0.9rem; margin-bottom: 6px; }
+        .info-box ul { margin: 0; padding-left: 18px; color: #78350f; font-size: 0.85rem; }
+        .info-box ul li { margin-bottom: 3px; }
+        .info-box code { background: rgba(245,158,11,0.15); padding: 1px 6px; border-radius: 4px; font-size: 0.82rem; color: #92400e; }
+
+        /* Toolbar */
+        .toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+        }
+        .toolbar-left { display: flex; align-items: center; gap: 10px; }
+        .count-badge {
+            background: rgba(239,68,68,0.1); color: #dc2626; border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 20px; padding: 3px 12px; font-size: 0.8rem; font-weight: 700;
+        }
+        .toolbar-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+
+        /* Bulk action button */
+        .btn-create-all {
+            background: linear-gradient(135deg, #10b981, #34d399); color: white;
+            border: none; border-radius: 10px; padding: 10px 22px; font-size: 0.875rem;
+            font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;
+            display: flex; align-items: center; gap: 8px; transition: var(--transition);
+            box-shadow: 0 2px 8px rgba(16,185,129,0.25);
+        }
+        .btn-create-all:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.4); }
+
+        /* Table card */
+        .table-card {
+            background: white; border-radius: var(--radius-md); overflow: hidden;
+            box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);
+        }
+        .table-card table thead th {
+            background: #f8fafc; font-size: 0.72rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.07em; color: #64748b;
+            padding: 13px 16px; border-bottom: 2px solid var(--border-color); border-top: none;
+        }
+        .table-card table tbody td {
+            padding: 12px 16px; vertical-align: middle;
+            border-bottom: 1px solid #f8fafc; font-size: 0.875rem; color: #374151;
+        }
+        .table-card table tbody tr:last-child td { border-bottom: none; }
+        .table-card table tbody tr:hover { background: rgba(79,70,229,0.02); }
+
+        .student-id-badge {
+            background: rgba(79,70,229,0.08); color: #4f46e5;
+            border-radius: 6px; padding: 3px 8px; font-size: 0.8rem;
+            font-family: 'Courier New', monospace; font-weight: 600;
+        }
+        .section-badge {
+            background: rgba(16,185,129,0.1); color: #059669;
+            border-radius: 6px; padding: 3px 8px; font-size: 0.78rem; font-weight: 600;
+        }
+
+        .btn-create-one {
+            background: rgba(79,70,229,0.1); color: #4f46e5;
+            border: 1.5px solid rgba(79,70,229,0.2); border-radius: 8px;
+            padding: 5px 14px; font-size: 0.78rem; font-weight: 600;
+            cursor: pointer; font-family: 'Inter', sans-serif;
+            display: inline-flex; align-items: center; gap: 5px; transition: var(--transition);
+        }
+        .btn-create-one:hover { background: #4f46e5; color: white; transform: translateY(-1px); }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center; padding: 60px 20px;
+            background: white; border-radius: var(--radius-md);
+            border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);
+        }
+        .empty-state-icon {
+            width: 72px; height: 72px; background: rgba(16,185,129,0.1);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px; font-size: 1.8rem; color: #10b981;
+        }
+        .empty-state h4 { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+        .empty-state p { color: #64748b; font-size: 0.875rem; margin: 0; }
+
+        /* Search */
+        .search-wrapper { position: relative; }
+        .search-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem; }
+        .search-input {
+            border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 9px 14px 9px 38px;
+            font-size: 0.875rem; width: 240px; transition: all 0.2s; background: #f8fafc;
+            font-family: 'Inter', sans-serif;
+        }
+        .search-input:focus { outline: none; border-color: #4f46e5; background: white; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+    </style>
+</head>
+<body>
+<div class="page-container">
+
+    <!-- Page Header -->
+    <div class="page-header-card">
+        <div class="header-content">
+            <div class="header-icon"><i class="bi bi-key-fill"></i></div>
+            <h1>Student Create Login Accounts</h1>
+            <p>Students listed here have no login account yet</p>
+        </div>
+        <a href="{% url 'accounts:dashboard' %}" class="header-back-btn">
+            <i class="bi bi-arrow-left"></i> Back to Admin
+        </a>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for m in messages %}
+            <div class="alert-custom
+                {% if m.tags == 'success' %}alert-success-c
+                {% elif m.tags == 'error' or m.tags == 'danger' %}alert-danger-c
+                {% else %}alert-info-c{% endif %}">
+                {% if m.tags == 'success' %}<i class="bi bi-check-circle-fill" style="flex-shrink:0; margin-top:1px;"></i>
+                {% elif m.tags == 'error' or m.tags == 'danger' %}<i class="bi bi-exclamation-circle-fill" style="flex-shrink:0; margin-top:1px;"></i>
+                {% else %}<i class="bi bi-info-circle-fill" style="flex-shrink:0; margin-top:1px;"></i>{% endif %}
+                <span>{{ m }}</span>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Info Box -->
+    <div class="info-box">
+        <div class="info-box-icon"><i class="bi bi-info-circle-fill"></i></div>
+        <div>
+            <div class="info-box-title">How it works</div>
+            <ul>
+                <li><strong>Username:</strong> Student ID (e.g. <code>4201912345</code>)</li>
+                <li><strong>Password:</strong> Same as Student ID — student should change after first login</li>
+                <li><strong>Role:</strong> Student</li>
+            </ul>
+        </div>
+    </div>
+
+    {% if students %}
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <span class="toolbar-title">Students without accounts</span>
+            <span class="count-badge">{{ total }}</span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="search-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" id="studentSearch" class="search-input" placeholder="Search students...">
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create_all">
+                <button type="submit" class="btn-create-all"
+                        onclick="return confirm('Create accounts for ALL {{ total }} students?')">
+                    <i class="bi bi-check-all"></i> Create All Accounts
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+        <div class="table-responsive">
+            <table class="table mb-0" id="studentTable">
+                <thead>
+                    <tr>
+                        <th style="width:50px;">#</th>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Class / Section</th>
+                        <th>Roll No.</th>
+                        <th>Email</th>
+                        <th style="width:140px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for student in students %}
+                    <tr class="student-row">
+                        <td style="color:#94a3b8; font-size:0.8rem;">{{ forloop.counter }}</td>
+                        <td><span class="student-id-badge">{{ student.student_id }}</span></td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width:32px; height:32px; background:linear-gradient(135deg,#4f46e5,#818cf8); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:0.78rem; flex-shrink:0;">
+                                    {{ student.name|first|upper|default:"?" }}
+                                </div>
+                                <span style="font-weight:500;">{{ student.name|default:"—" }}</span>
+                            </div>
+                        </td>
+                        <td><span class="section-badge">{{ student.section }}</span></td>
+                        <td style="font-weight:600; color:#374151;">{{ student.roll_number }}</td>
+                        <td style="color:#64748b; font-size:0.82rem;">
+                            {% if student.email %}{{ student.email }}{% else %}<span style="color:#94a3b8; font-style:italic;">auto-generated</span>{% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="create_one">
+                                <input type="hidden" name="student_id" value="{{ student.pk }}">
+                                <button type="submit" class="btn-create-one">
+                                    <i class="bi bi-person-plus-fill"></i> Create Account
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="bi bi-check-circle-fill"></i></div>
+            <h4>All students have login accounts!</h4>
+            <p>Every student profile is already linked to a user account.</p>
+        </div>
+    {% endif %}
+
+</div><!-- /page-container -->
+
+<script>
+    const searchInput = document.getElementById('studentSearch');
+    if (searchInput) {
+        const rows = document.querySelectorAll('.student-row');
+        searchInput.addEventListener('input', function() {
+            const q = this.value.toLowerCase();
+            rows.forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        });
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

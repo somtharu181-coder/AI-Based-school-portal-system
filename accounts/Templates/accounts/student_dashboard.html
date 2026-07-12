@@ -1,0 +1,503 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Student Dashboard — Scholaro ERP</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sw:256px;--nh:64px;
+  --bg:#f1f5f9;--white:#fff;
+  --primary:#4f46e5;--primary-d:#3730a3;--primary-l:#ede9fe;
+  --green:#10b981;--amber:#f59e0b;--red:#ef4444;--sky:#0891b2;--violet:#8b5cf6;
+  --text:#1e293b;--muted:#64748b;--border:#e2e8f0;
+  --sh-sm:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sh-md:0 4px 16px rgba(0,0,0,.08);
+  --sh-lg:0 10px 40px rgba(0,0,0,.12);
+  --tr:.2s cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
+
+/* ── Sidebar ── */
+.sb{width:var(--sw);background:linear-gradient(180deg,#1e1b4b 0%,#16133a 100%);height:100vh;position:fixed;left:0;top:0;z-index:300;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.25);}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.sb-logo{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sb-brand-text{font-size:.95rem;font-weight:700;color:#fff;line-height:1.2;}
+.sb-brand-text small{display:block;font-size:.65rem;color:rgba(165,180,252,.6);font-weight:400;}
+.sb-nav{flex:1;overflow-y:auto;padding:12px 10px 8px;scrollbar-width:thin;scrollbar-color:#334155 transparent;}
+.sb-nav::-webkit-scrollbar{width:4px;}
+.sb-nav::-webkit-scrollbar-thumb{background:#334155;border-radius:4px;}
+.sb-section-lbl{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(165,180,252,.4);padding:12px 10px 5px;}
+.sb-link{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-bottom:1px;color:rgba(255,255,255,.65);text-decoration:none;border-radius:9px;font-size:.85rem;font-weight:500;transition:var(--tr);}
+.sb-link:hover{background:rgba(79,70,229,.3);color:#fff;transform:translateX(3px);}
+.sb-link.active{background:rgba(79,70,229,.45);color:#fff;box-shadow:0 0 0 1px rgba(99,102,241,.4);}
+.sb-link-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.82rem;}
+.sb-foot{padding:12px 10px;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.sb-user-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.sb-avatar{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0;}
+.sb-user-info{min-width:0;}
+.sb-user-name{font-size:.8rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-user-role{font-size:.65rem;color:rgba(165,180,252,.6);}
+
+/* ── Main ── */
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* ── Topbar ── */
+.topbar{height:var(--nh);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100;box-shadow:var(--sh-sm);}
+.topbar-left h1{font-size:1.1rem;font-weight:800;color:var(--text);margin:0;}
+.topbar-left p{font-size:.72rem;color:var(--muted);margin:0;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.tb-btn{width:36px;height:36px;border-radius:9px;border:1.5px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--tr);color:var(--muted);text-decoration:none;position:relative;}
+.tb-btn:hover{background:var(--primary-l);border-color:#c4b5fd;color:var(--primary);}
+.tb-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:.55rem;font-weight:800;border-radius:99px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid #fff;}
+.tb-user{display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:var(--tr);background:transparent;position:relative;}
+.tb-user:hover{background:#f8fafc;border-color:#c4b5fd;}
+.tb-user-av{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#fff;}
+.tb-user-name{font-size:.82rem;font-weight:600;color:var(--text);}
+.tb-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh-lg);min-width:200px;padding:6px;z-index:200;display:none;}
+.tb-user:focus-within .tb-dropdown,.tb-dropdown:hover{display:block;}
+.tb-dd-header{padding:10px 12px 10px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.tb-dd-name{font-size:.875rem;font-weight:700;color:var(--text);}
+.tb-dd-role{font-size:.7rem;background:#ede9fe;color:#5b21b6;padding:1px 7px;border-radius:4px;font-weight:600;display:inline-block;margin-top:3px;}
+.tb-dd-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:500;color:var(--text);transition:var(--tr);}
+.tb-dd-item:hover{background:#f1f5f9;}
+.tb-dd-item.danger{color:var(--red);}
+.tb-dd-item.danger:hover{background:#fef2f2;}
+
+/* ── Content ── */
+.content{padding:26px 28px 48px;flex:1;}
+
+/* ── Hero ── */
+.hero{background:linear-gradient(135deg,#1e1b4b 0%,#312e81 45%,#4f46e5 100%);border-radius:18px;padding:26px 30px;margin-bottom:26px;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(79,70,229,.3);}
+.hero::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.05);}
+.hero::after{content:'';position:absolute;bottom:-80px;left:30%;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.03);}
+.hero-title{font-size:1.5rem;font-weight:800;color:#fff;margin:0 0 4px;position:relative;z-index:1;}
+.hero-sub{font-size:.82rem;color:rgba(255,255,255,.7);position:relative;z-index:1;}
+.hero-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;position:relative;z-index:1;}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:600;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);}
+
+/* ── Stat cards ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:26px;}
+@media(max-width:1024px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:576px){.stat-grid{grid-template-columns:1fr 1fr;}}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 20px;box-shadow:var(--sh-sm);transition:var(--tr);cursor:default;}
+.stat-card:hover{box-shadow:var(--sh-md);transform:translateY(-3px);}
+.stat-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:12px;flex-shrink:0;}
+.stat-val{font-size:1.75rem;font-weight:800;line-height:1;margin-bottom:3px;}
+.stat-lbl{font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+.stat-sub{font-size:.68rem;color:var(--muted);margin-top:4px;}
+.stat-bar-track{height:4px;background:#f1f5f9;border-radius:99px;overflow:hidden;margin-top:8px;}
+.stat-bar-fill{height:100%;border-radius:99px;transition:width .8s ease;}
+
+/* ── Feature cards ── */
+.feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+@media(max-width:1280px){.feature-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:900px){.feature-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:480px){.feature-grid{grid-template-columns:1fr;}}
+.fcard{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--sh-sm);transition:var(--tr);display:flex;flex-direction:column;}
+.fcard:hover{box-shadow:var(--sh-md);transform:translateY(-4px);border-color:#c4b5fd;}
+.fcard-icon{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:14px;flex-shrink:0;}
+.fcard-title{font-size:.92rem;font-weight:700;color:var(--text);margin-bottom:6px;}
+.fcard-desc{font-size:.78rem;color:var(--muted);line-height:1.6;flex:1;margin-bottom:16px;}
+.fcard-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;font-size:.78rem;font-weight:700;text-decoration:none;transition:var(--tr);width:fit-content;}
+.fcard-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.15);}
+.fcard-btn.disabled{background:#f1f5f9 !important;color:#94a3b8 !important;cursor:not-allowed;pointer-events:none;}
+
+/* ── Warning box ── */
+.warn-box{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.3);border-left:4px solid var(--amber);border-radius:12px;padding:16px 20px;margin-bottom:22px;display:flex;align-items:flex-start;gap:12px;}
+
+/* ── Section card ── */
+.sec-card{background:var(--white);border:1px solid var(--border);border-radius:14px;box-shadow:var(--sh-sm);margin-bottom:20px;}
+.sec-card-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.sec-card-title{font-size:.9rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.sec-card-body{padding:20px;}
+
+@media(max-width:768px){.sb{transform:translateX(-100%);}.main{margin-left:0;}.content{padding:16px;}}
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ────────────────────────────────────────────── -->
+<aside class="sb">
+  <div class="sb-brand">
+    <div class="sb-logo"><i class="bi bi-mortarboard-fill" style="color:#fff;font-size:1.1rem;"></i></div>
+    <div class="sb-brand-text">Scholaro ERP<small>Student Portal</small></div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section-lbl">Overview</div>
+    <a href="{% url 'accounts:student_dashboard' %}" class="sb-link active">
+      <div class="sb-link-icon" style="background:rgba(79,70,229,.25);"><i class="bi bi-speedometer2" style="color:#a5b4fc;"></i></div>Dashboard
+    </a>
+
+    <div class="sb-section-lbl">Academics</div>
+    {% if student_profile %}
+    <a href="{% url 'students:my_profile' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(99,102,241,.2);"><i class="bi bi-person-circle" style="color:#a5b4fc;"></i></div>My Profile
+    </a>
+    <a href="{% url 'academics:student_marks' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(16,185,129,.2);"><i class="bi bi-journal-text" style="color:#6ee7b7;"></i></div>My Marks
+    </a>
+    <a href="{% url 'attendance:my_attendance' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(245,158,11,.2);"><i class="bi bi-calendar-check" style="color:#fcd34d;"></i></div>My Attendance
+    </a>
+    <a href="{% url 'reporting_system:my_results' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(6,182,212,.2);"><i class="bi bi-award-fill" style="color:#67e8f9;"></i></div>Exam Results
+    </a>
+    <a href="{% url 'analytics:my_ai_report' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(236,72,153,.2);"><i class="bi bi-robot" style="color:#f9a8d4;"></i></div>AI Report
+    </a>
+
+    <div class="sb-section-lbl">Activities</div>
+    <a href="{% url 'assignments:student_list' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(245,158,11,.2);"><i class="bi bi-clipboard-fill" style="color:#fcd34d;"></i></div>Assignments
+      {% if pending_assignments and pending_assignments > 0 %}
+      <span style="margin-left:auto;background:#ef4444;color:#fff;font-size:.6rem;font-weight:800;border-radius:99px;padding:1px 6px;">{{ pending_assignments }}</span>
+      {% endif %}
+    </a>
+    <a href="{% url 'quiz:home' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(139,92,246,.2);"><i class="bi bi-lightning-charge-fill" style="color:#c4b5fd;"></i></div>AI Quiz
+    </a>
+    <a href="{% url 'notifications:inbox' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(99,102,241,.2);"><i class="bi bi-bell-fill" style="color:#a5b4fc;"></i></div>Notifications
+      {% if unread_notif and unread_notif > 0 %}
+      <span style="margin-left:auto;background:#ef4444;color:#fff;font-size:.6rem;font-weight:800;border-radius:99px;padding:1px 6px;">{{ unread_notif }}</span>
+      {% endif %}
+    </a>
+
+    <div class="sb-section-lbl">Account</div>
+    <a href="{% url 'accounts:change_credentials' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(100,116,139,.2);"><i class="bi bi-shield-lock-fill" style="color:#94a3b8;"></i></div>Security
+    </a>
+    {% else %}
+    <a href="{% url 'notifications:inbox' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(99,102,241,.2);"><i class="bi bi-bell-fill" style="color:#a5b4fc;"></i></div>Notifications
+    </a>
+    <a href="{% url 'accounts:change_credentials' %}" class="sb-link">
+      <div class="sb-link-icon" style="background:rgba(100,116,139,.2);"><i class="bi bi-shield-lock-fill" style="color:#94a3b8;"></i></div>Security
+    </a>
+    {% endif %}
+  </nav>
+
+  <div class="sb-foot">
+    <div class="sb-user-card">
+      <div class="sb-avatar">{{ request.user.get_full_name|default:request.user.username|first|upper }}</div>
+      <div class="sb-user-info">
+        <div class="sb-user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+        <div class="sb-user-role">Student</div>
+      </div>
+    </div>
+    <form method="POST" action="{% url 'accounts:logout' %}">
+      {% csrf_token %}
+      <button type="submit" style="width:100%;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:9px;padding:8px;font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:'Inter',sans-serif;transition:all .2s;"
+              onmouseover="this.style.background='rgba(239,68,68,.22)'"
+              onmouseout="this.style.background='rgba(239,68,68,.12)'">
+        <i class="bi bi-box-arrow-right"></i> Logout
+      </button>
+    </form>
+  </div>
+</aside>
+
+<!-- ── MAIN ───────────────────────────────────────────────── -->
+<div class="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1>Student Dashboard</h1>
+      <p>Academic overview &amp; quick access</p>
+    </div>
+    <div class="topbar-right">
+      <!-- Notifications -->
+      <a href="{% url 'notifications:inbox' %}" class="tb-btn">
+        <i class="bi bi-bell-fill" style="font-size:.9rem;"></i>
+        {% if unread_notif and unread_notif > 0 %}<span class="tb-badge">{{ unread_notif }}</span>{% endif %}
+      </a>
+      <!-- User dropdown -->
+      <div class="tb-user" tabindex="0">
+        <div class="tb-user-av">{{ request.user.get_full_name|default:request.user.username|first|upper }}</div>
+        <span class="tb-user-name d-none d-md-block">{{ request.user.username }}</span>
+        <i class="bi bi-chevron-down" style="font-size:.65rem;color:#94a3b8;"></i>
+        <div class="tb-dropdown">
+          <div class="tb-dd-header">
+            <div class="tb-dd-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+            <span class="tb-dd-role">Student</span>
+          </div>
+          {% if student_profile %}
+          <a href="{% url 'students:my_profile' %}" class="tb-dd-item">
+            <i class="bi bi-person-circle" style="color:#4f46e5;"></i> My Profile
+          </a>
+          {% endif %}
+          <a href="{% url 'accounts:change_credentials' %}" class="tb-dd-item">
+            <i class="bi bi-shield-lock" style="color:#10b981;"></i> Security Settings
+          </a>
+          <div style="height:1px;background:#f1f5f9;margin:4px 0;"></div>
+          <form method="POST" action="{% url 'accounts:logout' %}" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="tb-dd-item danger" style="width:100%;background:transparent;border:none;cursor:pointer;font-family:'Inter',sans-serif;text-align:left;">
+              <i class="bi bi-box-arrow-right"></i> Logout
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- No profile warning -->
+    {% if not student_profile %}
+    <div class="warn-box">
+      <i class="bi bi-exclamation-triangle-fill" style="color:#f59e0b;font-size:1.2rem;flex-shrink:0;margin-top:2px;"></i>
+      <div>
+        <strong style="color:#92400e;font-size:.9rem;">Account not linked to a student profile.</strong>
+        <p style="color:#78350f;font-size:.8rem;margin:4px 0 0;line-height:1.6;">Contact your school administrator to link your account. Academic features are unavailable until this is resolved.</p>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Hero banner -->
+    <div class="hero">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+          <p class="hero-title">
+            <i class="bi bi-mortarboard-fill me-2" style="color:#a5b4fc;"></i>
+            Welcome back, {{ request.user.get_full_name|default:request.user.username }}
+          </p>
+          {% if student_profile %}
+          <p class="hero-sub">Here's your academic snapshot for today.</p>
+          <div class="hero-chips">
+            <span class="chip"><i class="bi bi-building"></i>{{ student_profile.section.class_obj.name }}</span>
+            <span class="chip"><i class="bi bi-grid"></i>Section {{ student_profile.section.name }}</span>
+            <span class="chip"><i class="bi bi-hash"></i>Roll {{ student_profile.roll_number }}</span>
+            <span class="chip"><i class="bi bi-fingerprint"></i>{{ student_profile.student_id }}</span>
+          </div>
+          {% else %}
+          <p class="hero-sub">Your student profile has not been linked yet.</p>
+          {% endif %}
+        </div>
+        {% if student_profile %}
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;position:relative;z-index:1;">
+          {% if latest_result %}
+          <div style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 16px;text-align:center;">
+            <div style="font-size:1.6rem;font-weight:800;color:#fff;line-height:1;">{{ latest_result.percentage }}%</div>
+            <div style="font-size:.65rem;color:rgba(255,255,255,.6);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">{{ latest_result.exam_term.name|truncatechars:18 }}</div>
+            {% if latest_result.is_pass %}
+            <div style="font-size:.62rem;background:rgba(74,222,128,.2);color:#4ade80;padding:2px 8px;border-radius:20px;font-weight:700;margin-top:4px;display:inline-block;">PASSED</div>
+            {% else %}
+            <div style="font-size:.62rem;background:rgba(248,113,113,.2);color:#f87171;padding:2px 8px;border-radius:20px;font-weight:700;margin-top:4px;display:inline-block;">FAILED</div>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    {% if student_profile %}
+    <div class="stat-grid">
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#ede9fe;"><i class="bi bi-calendar-check-fill" style="color:#7c3aed;"></i></div>
+        <div class="stat-val" style="color:#7c3aed;">{% if total_attendance %}{{ attendance_pct }}%{% else %}—{% endif %}</div>
+        <div class="stat-lbl">Attendance Rate</div>
+        {% if total_attendance %}
+        <div class="stat-bar-track"><div class="stat-bar-fill" style="width:{{ attendance_pct }}%;background:{% if attendance_pct >= 75 %}#10b981{% else %}#ef4444{% endif %};"></div></div>
+        <div class="stat-sub">{{ total_attendance }} days recorded</div>
+        {% endif %}
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#d1fae5;"><i class="bi bi-journal-text" style="color:#059669;"></i></div>
+        <div class="stat-val" style="color:#059669;">{{ total_marks|default:"0" }}</div>
+        <div class="stat-lbl">Marks Records</div>
+        <div class="stat-sub">Subject-wise entries</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e0f2fe;"><i class="bi bi-trophy-fill" style="color:#0284c7;"></i></div>
+        {% if latest_result %}
+        <div class="stat-val" style="color:#0284c7;">{{ latest_result.percentage }}%</div>
+        <div class="stat-lbl">Latest Result</div>
+        <div class="stat-sub">{{ latest_result.exam_term.name|truncatechars:22 }}</div>
+        {% else %}
+        <div class="stat-val" style="color:#94a3b8;">—</div>
+        <div class="stat-lbl">Latest Result</div>
+        <div class="stat-sub">No result published yet</div>
+        {% endif %}
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fef3c7;"><i class="bi bi-clipboard2-fill" style="color:#d97706;"></i></div>
+        <div class="stat-val" style="color:{% if pending_assignments and pending_assignments > 0 %}#d97706{% else %}#10b981{% endif %};">{{ pending_assignments|default:"0" }}</div>
+        <div class="stat-lbl">Pending Tasks</div>
+        <div class="stat-sub">Assignments due</div>
+      </div>
+
+    </div>
+    {% endif %}
+
+    <!-- Feature cards -->
+    <div style="margin-bottom:16px;">
+      <h2 style="font-size:.85rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px;">
+        <i class="bi bi-grid-fill me-2" style="color:#a5b4fc;"></i>Quick Access
+      </h2>
+    </div>
+    <div class="feature-grid">
+
+      <!-- My Profile -->
+      <div class="fcard">
+        <div class="fcard-icon" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);">
+          <i class="bi bi-person-circle" style="color:#7c3aed;"></i>
+        </div>
+        <div class="fcard-title">My Profile</div>
+        <div class="fcard-desc">View your personal information, class, section, and academic year details.</div>
+        {% if student_profile %}
+        <a href="{% url 'students:my_profile' %}" class="fcard-btn" style="background:#7c3aed;color:#fff;">
+          <i class="bi bi-arrow-right-circle-fill"></i> Open
+        </a>
+        {% else %}
+        <span class="fcard-btn disabled"><i class="bi bi-lock-fill"></i> Not Available</span>
+        {% endif %}
+      </div>
+
+      <!-- My Marks -->
+      <div class="fcard">
+        <div class="fcard-icon" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0);">
+          <i class="bi bi-journal-text" style="color:#059669;"></i>
+        </div>
+        <div class="fcard-title">My Marks</div>
+        <div class="fcard-desc">Check subject-wise marks and grades for each exam term.</div>
+        {% if student_profile %}
+        <a href="{% url 'academics:student_marks' %}" class="fcard-btn" style="background:#059669;color:#fff;">
+          <i class="bi bi-arrow-right-circle-fill"></i> Open
+        </a>
+        {% else %}
+        <span class="fcard-btn disabled"><i class="bi bi-lock-fill"></i> Not Available</span>
+        {% endif %}
+      </div>
+
+      <!-- My Attendance -->
+      <div class="fcard">
+        <div class="fcard-icon" style="background:linear-gradient(135deg,#fef3c7,#fde68a);">
+          <i class="bi bi-calendar-check-fill" style="color:#d97706;"></i>
+        </div>
+        <div class="fcard-title">My Attendance</div>
+        <div class="fcard-desc">Track your daily attendance record and percentage over time.</div>
+        {% if student_profile %}
+        <a href="{% url 'attendance:my_attendance' %}" class="fcard-btn" style="background:#d97706;color:#fff;">
+          <i class="bi bi-arrow-right-circle-fill"></i> Open
+        </a>
+        {% else %}
+        <span class="fcard-btn disabled"><i class="bi bi-lock-fill"></i> Not Available</span>
+        {% endif %}
+      </div>
+
+      <!-- Exam Results -->
+      <div class="fcard">
+        <div class="fcard-icon" style="background:linear-gradient(135deg,#e0f2fe,#bae6fd);">
+          <i class="bi bi-award-fill" style="color:#0284c7;"></i>
+        </div>
+        <div class="fcard-title">Exam Results</div>
+        <div class="fcard-desc">View your published exam results, grade cards, and pass/fail status.</div>
+        {% if student_profile %}
+        <a href="{% url 'reporting_system:my_results' %}" class="fcard-btn" style="background:#0284c7;color:#fff;">
+          <i class="bi bi-arrow-right-circle-fill"></i> Open
+        </a>
+        {% else %}
+        <span class="fcard-btn disabled"><i class="bi bi-lock-fill"></i> Not Available</span>
+        {% endif %}
+      </div>
+
+      <!-- AI Report -->
+      <div class="fcard">
+        <div class="fcard-icon" style="background:linear-gradient(135deg,#fce7f3,#fbcfe8);">
+          <i class="bi bi-robot" style="color:#db2777;"></i>
+        </div>
+        <div class="fcard-title">AI Performance Report</div>
+        <div class="fcard-desc">AI-generated insights and recommendations based on your exam history.</div>
+        {% if student_profile %}
+        <a href="{% url 'analytics:my_ai_report' %}" class="fcard-btn" style="background:#db2777;color:#fff;">
+          <i class="bi bi-arrow-right-circle-fill"></i> Open
+        </a>
+        {% else %}
+        <span class="fcard-btn disabled"><i class="bi bi-lock-fill"></i> Not Available</span>
+        {% endif %}
+      </div>
+
+      <!-- Assignments -->
+      <div class="fcard">
+        <div class="fcard-icon" style="background:linear-gradient(135deg,#fff7ed,#fed7aa);">
+          <i class="bi bi-clipboard2-fill" style="color:#ea580c;"></i>
+        </div>
+        <div class="fcard-title">My Assignments</div>
+        <div class="fcard-desc">View, download, and submit homework assigned by your teachers.</div>
+        {% if student_profile %}
+        <a href="{% url 'assignments:student_list' %}" class="fcard-btn" style="background:#ea580c;color:#fff;">
+          <i class="bi bi-arrow-right-circle-fill"></i>
+          Open {% if pending_assignments and pending_assignments > 0 %}<span style="background:rgba(255,255,255,.25);padding:1px 6px;border-radius:99px;font-size:.65rem;">{{ pending_assignments }}</span>{% endif %}
+        </a>
+        {% else %}
+        <span class="fcard-btn disabled"><i class="bi bi-lock-fill"></i> Not Available</span>
+        {% endif %}
+      </div>
+
+      <!-- AI Quiz -->
+      <div class="fcard">
+        <div class="fcard-icon" style="background:linear-gradient(135deg,#ede9fe,#c4b5fd);">
+          <i class="bi bi-lightning-charge-fill" style="color:#7c3aed;"></i>
+        </div>
+        <div class="fcard-title">AI Quiz</div>
+        <div class="fcard-desc">Take AI-generated quizzes based on your curriculum to sharpen your skills.</div>
+        {% if student_profile %}
+        <a href="{% url 'quiz:home' %}" class="fcard-btn" style="background:#7c3aed;color:#fff;">
+          <i class="bi bi-arrow-right-circle-fill"></i> Start Quiz
+        </a>
+        {% else %}
+        <span class="fcard-btn disabled"><i class="bi bi-lock-fill"></i> Not Available</span>
+        {% endif %}
+      </div>
+
+      <!-- Notifications -->
+      <div class="fcard">
+        <div class="fcard-icon" style="background:linear-gradient(135deg,#e0e7ff,#c7d2fe);">
+          <i class="bi bi-bell-fill" style="color:#4f46e5;"></i>
+        </div>
+        <div class="fcard-title">Notices &amp; Alerts</div>
+        <div class="fcard-desc">Read school announcements, exam alerts, and important notices.</div>
+        <a href="{% url 'notifications:inbox' %}" class="fcard-btn" style="background:#4f46e5;color:#fff;">
+          <i class="bi bi-arrow-right-circle-fill"></i>
+          Open {% if unread_notif and unread_notif > 0 %}<span style="background:rgba(255,255,255,.25);padding:1px 6px;border-radius:99px;font-size:.65rem;">{{ unread_notif }}</span>{% endif %}
+        </a>
+      </div>
+
+    </div><!-- /feature-grid -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* Count-up animation on stat values */
+document.querySelectorAll('.stat-val').forEach(function(el){
+  var raw = el.textContent.trim();
+  var num = parseFloat(raw.replace('%','').replace('—',''));
+  if(isNaN(num)) return;
+  var hasPct = raw.includes('%');
+  var dur = 700, steps = 40, step = 0;
+  var timer = setInterval(function(){
+    step++;
+    var val = Math.round(num * step / steps * 10) / 10;
+    el.textContent = val + (hasPct ? '%' : '');
+    if(step >= steps){ el.textContent = raw; clearInterval(timer); }
+  }, dur / steps);
+});
+</script>
+</body>
+</html>

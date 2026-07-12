@@ -1,0 +1,212 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Create — Scholaro ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{box-sizing:border-box;}body{font-family:'Inter',sans-serif;background:#f1f5f9;margin:0;}
+        .page-header{background:linear-gradient(135deg,#064e3b,#065f46,#10b981);color:white;padding:22px 32px;border-radius:0 0 20px 20px;margin-bottom:28px;box-shadow:0 6px 24px rgba(16,185,129,.3);}
+        .page-header h3{font-size:1.4rem;font-weight:800;margin:0;}
+        .form-card{background:white;border-radius:18px;box-shadow:0 2px 12px rgba(0,0,0,.07);border:1px solid #e2e8f0;overflow:hidden;margin-bottom:24px;}
+        .section-header{background:#f8fafc;padding:14px 24px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:10px;}
+        .section-header span{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#64748b;}
+        .section-header i{font-size:1rem;}
+        .section-body{padding:24px;}
+        .form-label{font-weight:600;font-size:.85rem;color:#374151;margin-bottom:6px;}
+        .form-control,.form-select{border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:.875rem;transition:all .2s;background:#f8fafc;font-family:'Inter',sans-serif;}
+        .form-control:focus,.form-select:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.12);background:white;outline:none;}
+        .btn-submit{background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;border-radius:10px;padding:12px 28px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;}
+        .btn-submit:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(16,185,129,.4);}
+        .btn-back{background:#f1f5f9;color:#64748b;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 24px;font-size:.9rem;font-weight:600;text-decoration:none;display:inline-block;transition:all .2s;}
+        .btn-back:hover{background:#e2e8f0;color:#374151;}
+        .alert{border-radius:10px;border:none;border-left:4px solid;font-size:.875rem;}
+    </style>
+</head>
+<body>
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h3><i class="bi bi-person-plus-fill me-2"></i>Student Create</h3>
+    <div class="d-flex gap-2">
+        <a href="{% url 'accounts:dashboard' %}" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:7px 14px;font-size:.82rem;text-decoration:none;">Dashboard</a>
+        <a href="{% url 'students:student_list' %}" style="background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:7px 14px;font-size:.82rem;text-decoration:none;"><i class="bi bi-arrow-left me-1"></i>Students</a>
+    </div>
+</div>
+
+<div class="container pb-5">
+
+    {% if form.errors %}
+        <div class="alert alert-danger mb-4">{{ form.errors }}</div>
+    {% endif %}
+
+    <form method="POST" novalidate>
+        {% csrf_token %}
+
+        <!-- Academic Info -->
+        <div class="form-card">
+            <div class="section-header">
+                <i class="bi bi-book-fill" style="color:#4f46e5;"></i>
+                <span>Academic Information</span>
+            </div>
+            <div class="section-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Class</label>
+                        <select id="class-select" class="form-select">
+                            <option value="">---------</option>
+                            {% for c in classes %}<option value="{{ c.id }}">{{ c }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Academic Year</label>
+                        {{ form.academic_year }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Section</label>
+                        {{ form.section }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Roll Number</label>
+                        {{ form.roll_number }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Info -->
+        <div class="form-card">
+            <div class="section-header">
+                <i class="bi bi-person-fill" style="color:#10b981;"></i>
+                <span>Personal Information</span>
+            </div>
+            <div class="section-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Student Name</label>
+                        {{ form.name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Gender</label>
+                        {{ form.gender }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date of Birth</label>
+                        {{ form.date_of_birth }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Religion Type</label>
+                        {{ form.religion_type }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="form-card">
+            <div class="section-header">
+                <i class="bi bi-envelope-fill" style="color:#f59e0b;"></i>
+                <span>Contact Information</span>
+            </div>
+            <div class="section-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        {{ form.email }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Temporary Address</label>
+                        {{ form.temprory_adress }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Permanent Address</label>
+                        {{ form.permanent_adress }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guardian Info -->
+        <div class="form-card">
+            <div class="section-header">
+                <i class="bi bi-people-fill" style="color:#ef4444;"></i>
+                <span>Guardian Information</span>
+            </div>
+            <div class="section-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Father Name</label>
+                        {{ form.father_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Mother Name</label>
+                        {{ form.mother_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Guardian Name</label>
+                        {{ form.guardian_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Guardian Phone</label>
+                        {{ form.guardian_phone }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Telephone</label>
+                        {{ form.telephone_number }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="form-card">
+            <div class="section-header">
+                <i class="bi bi-toggle-on" style="color:#06b6d4;"></i>
+                <span>Status</span>
+            </div>
+            <div class="section-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Status</label>
+                        {{ form.status }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-2">
+            <a href="{% url 'students:student_list' %}" class="btn-back"><i class="bi bi-arrow-left me-1"></i>Back</a>
+            <button type="submit" class="btn-submit"><i class="bi bi-check-lg me-1"></i>Student Create</button>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const classSelect = document.getElementById("class-select");
+    const sectionSelect = document.getElementById("id_section");
+    if (!classSelect || !sectionSelect) return;
+    classSelect.addEventListener("change", function () {
+        const classId = this.value;
+        sectionSelect.innerHTML = "<option value=''>---------</option>";
+        if (!classId) return;
+        fetch("{% url 'students:get_sections' %}?class_id=" + classId)
+            .then(res => res.json())
+            .then(data => {
+                sectionSelect.innerHTML = "<option value=''>---------</option>";
+                data.sections.forEach(sec => {
+                    const option = document.createElement("option");
+                    option.value = sec.id;
+                    option.textContent = sec.name;
+                    sectionSelect.appendChild(option);
+                });
+            })
+            .catch(err => console.log(err));
+    });
+});
+</script>
+</body>
+</html>

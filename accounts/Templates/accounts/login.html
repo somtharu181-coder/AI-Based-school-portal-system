@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — Scholaro ERP</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;-webkit-font-smoothing:antialiased;display:flex;height:100vh;background:#04080f;}
+.flag-panel{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:16px 24px;background:radial-gradient(ellipse 80% 60% at 55% 35%,rgba(30,136,229,.2) 0%,transparent 65%),radial-gradient(ellipse 60% 50% at 35% 75%,rgba(0,172,193,.13) 0%,transparent 60%),radial-gradient(ellipse 90% 70% at 70% 55%,rgba(26,35,126,.28) 0%,transparent 68%),linear-gradient(155deg,#060c1a 0%,#0b1a35 40%,#0d2244 70%,#070d1c 100%);}
+.flag-panel::before{content:'';position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(1.5px 1.5px at 7% 11%,rgba(255,255,255,.22) 0%,transparent 100%),radial-gradient(1px 1px at 19% 62%,rgba(255,255,255,.15) 0%,transparent 100%),radial-gradient(2px 2px at 30% 32%,rgba(255,255,255,.18) 0%,transparent 100%),radial-gradient(1px 1px at 44% 82%,rgba(255,255,255,.12) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 57% 20%,rgba(255,255,255,.20) 0%,transparent 100%),radial-gradient(1px 1px at 68% 57%,rgba(255,255,255,.14) 0%,transparent 100%),radial-gradient(2px 2px at 75% 7%,rgba(255,255,255,.17) 0%,transparent 100%),radial-gradient(1px 1px at 85% 44%,rgba(255,255,255,.13) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 92% 76%,rgba(255,255,255,.19) 0%,transparent 100%);}
+#flagCanvas{display:block;position:relative;z-index:2;filter:drop-shadow(0 8px 32px rgba(220,20,60,.3)) drop-shadow(0 2px 10px rgba(0,0,0,.55));margin-bottom:14px;flex-shrink:0;}
+.fp-body{text-align:center;position:relative;z-index:2;width:100%;max-width:500px;flex-shrink:0;}
+.fp-title{font-size:1.25rem;font-weight:800;color:#fff;letter-spacing:-.02em;line-height:1.25;margin-bottom:5px;text-shadow:0 2px 14px rgba(0,0,0,.5);}
+.fp-title span{background:linear-gradient(90deg,#60a5fa,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.fp-sub{font-size:.7rem;color:rgba(148,163,184,.8);line-height:1.55;margin-bottom:10px;}
+.fp-roles{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-bottom:10px;}
+.fp-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px 2px 6px;border-radius:20px;font-size:.6rem;font-weight:700;border:1px solid;}
+.fp-pill i{font-size:.63rem;}
+.pp-admin{background:rgba(99,102,241,.15);border-color:rgba(99,102,241,.3);color:#a5b4fc;}
+.pp-teach{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#fcd34d;}
+.pp-stu{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#6ee7b7;}
+.pp-par{background:rgba(6,182,212,.12);border-color:rgba(6,182,212,.3);color:#67e8f9;}
+.pp-acct{background:rgba(139,92,246,.12);border-color:rgba(139,92,246,.3);color:#c4b5fd;}
+.fp-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-bottom:8px;}
+.fp-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:.58rem;font-weight:600;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);color:rgba(255,255,255,.7);}
+.fp-chip i{font-size:.6rem;color:#60a5fa;}
+.fp-badge{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:20px;font-size:.58rem;font-weight:700;background:rgba(30,136,229,.12);border:1px solid rgba(30,136,229,.22);color:rgba(147,210,255,.85);}
+.login-panel{width:390px;min-width:390px;height:100vh;background:#fff;display:flex;flex-direction:column;justify-content:center;padding:20px 28px;position:relative;z-index:10;box-shadow:-4px 0 40px rgba(0,0,0,.5);overflow-y:auto;}
+.login-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1a237e,#3949ab,#1e88e5,#00acc1);}
+.lp-brand{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.lp-logo{width:38px;height:38px;flex-shrink:0;background:linear-gradient(135deg,#1a237e,#3949ab);border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(26,35,126,.35);}
+.lp-logo i{font-size:1.15rem;color:#fff;}
+.lp-name{font-size:.88rem;font-weight:800;color:#1e293b;letter-spacing:-.02em;line-height:1.2;}
+.lp-sub{font-size:.6rem;color:#64748b;font-weight:500;margin-top:1px;}
+.lp-welcome{text-align:center;margin-bottom:14px;}
+.lp-welcome h2{font-size:1.2rem;font-weight:800;color:#0f172a;letter-spacing:-.025em;margin-bottom:2px;}
+.lp-welcome p{font-size:.72rem;color:#64748b;}
+.sec-hd{font-size:.6rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.09em;display:flex;align-items:center;gap:7px;margin-bottom:10px;}
+.sec-hd::after{content:'';flex:1;height:1px;background:#f1f5f9;}
+.field{margin-bottom:9px;}
+.f-label{display:block;font-size:.67rem;font-weight:600;color:#374151;margin-bottom:3px;}
+.f-wrap{position:relative;}
+.f-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:.78rem;color:#9ca3af;pointer-events:none;z-index:2;transition:color .14s;}
+.f-input{width:100%;padding:8px 32px 8px 29px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.82rem;font-family:inherit;color:#1e293b;background:#f8fafc;outline:none;transition:border-color .14s,box-shadow .14s,background .14s;-webkit-appearance:none;}
+.f-input:focus{border-color:#3949ab;background:#fff;box-shadow:0 0 0 3px rgba(57,73,171,.1);}
+.f-input:focus ~ .f-ico{color:#3949ab;}
+.f-input.err{border-color:#ef4444;background:#fff7f7;}
+.f-input.err::placeholder{color:#ef4444;font-weight:600;}
+.eye-btn{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9ca3af;font-size:.78rem;line-height:1;padding:2px;z-index:2;transition:color .14s;}
+.eye-btn:hover{color:#3949ab;}
+.cap-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.cap-lbl{font-size:.67rem;font-weight:600;color:#374151;}
+.cap-controls{display:flex;align-items:center;gap:5px;}
+#capTimerBadge{font-size:.62rem;font-weight:700;color:#10b981;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:20px;padding:1px 7px;min-width:34px;text-align:center;font-variant-numeric:tabular-nums;transition:color .3s,background .3s,border-color .3s;}
+.cap-btn{font-size:.62rem;font-weight:600;color:#3949ab;background:none;border:none;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:3px;padding:0;transition:color .14s;}
+.cap-btn:hover{color:#1a237e;}
+.cap-btn.spin i{animation:spin .5s linear;}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.cap-img{width:100%;height:50px;border:1.5px solid #dde3ec;border-radius:8px;overflow:hidden;background:#f5f7fc;box-shadow:inset 0 1px 3px rgba(0,0,0,.06);margin-bottom:6px;}
+#captchaImg{width:100%;height:100%;display:block;object-fit:fill;transition:opacity .18s;-webkit-user-drag:none;user-select:none;}
+#captchaImg.ld{opacity:.2;}
+.cap-input{width:100%;padding:7px 10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;font-weight:700;font-family:'Courier New',monospace;color:#1e293b;background:#f8fafc;outline:none;text-align:center;letter-spacing:.2em;text-transform:uppercase;transition:border-color .14s,box-shadow .14s;-webkit-appearance:none;margin-bottom:2px;}
+.cap-input::placeholder{letter-spacing:.03em;font-size:.68rem;font-weight:500;color:#b0bac9;font-family:inherit;text-transform:none;}
+.cap-input:focus{border-color:#3949ab;background:#fff;box-shadow:0 0 0 3px rgba(57,73,171,.1);}
+.cap-input.err{border-color:#ef4444;background:#fff7f7;}
+.cap-input.err::placeholder{color:#ef4444;font-weight:600;}
+.cap-hint{font-size:.58rem;color:#94a3b8;display:flex;align-items:center;gap:3px;margin-bottom:9px;}
+.cap-hint i{font-size:.6rem;color:#3949ab;}
+.g-banner{display:flex;align-items:flex-start;gap:6px;padding:7px 10px;border-radius:7px;font-size:.72rem;font-weight:500;line-height:1.4;margin-bottom:9px;}
+.g-banner i{flex-shrink:0;font-size:.75rem;margin-top:1px;}
+.b-err{background:#fef2f2;border:1px solid #fecaca;border-left:3px solid #ef4444;color:#b91c1c;}
+.b-ok{background:#f0fdf4;border:1px solid #bbf7d0;border-left:3px solid #10b981;color:#065f46;}
+.b-warn{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #f59e0b;color:#92400e;}
+.btn-sub{width:100%;padding:9px;background:linear-gradient(135deg,#1a237e 0%,#3949ab 55%,#1e88e5 100%);color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .17s;box-shadow:0 3px 12px rgba(26,35,126,.28);margin-top:2px;}
+.btn-sub:hover{background:linear-gradient(135deg,#0d1257 0%,#283593 55%,#1565c0 100%);box-shadow:0 5px 18px rgba(26,35,126,.4);transform:translateY(-1px);}
+.btn-sub:active{transform:translateY(0);}
+.lp-footer{margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;}
+.lp-sec{font-size:.58rem;color:#94a3b8;display:flex;align-items:center;gap:3px;}
+.lp-sec i{color:#10b981;font-size:.62rem;}
+.lp-copy{font-size:.56rem;color:#cbd5e1;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+.shake{animation:shake .3s ease;}
+@media(max-width:860px){body{flex-direction:column;overflow:auto;height:auto;}.flag-panel{min-height:auto;padding:20px 16px;}.login-panel{width:100%;min-width:0;height:auto;padding:20px 18px;}#flagCanvas{width:185px!important;height:213px!important;}}
+</style>
+</head>
+<body>
+
+<div class="flag-panel">
+  <canvas id="flagCanvas" width="270" height="310"></canvas>
+  <div class="fp-body">
+    <div class="fp-title">Smart <span>Result </span> Analysis System</div>
+    <p class="fp-sub">National-level school ERP — academics, attendance,<br>AI analytics &amp; result management for Nepal.</p>
+    <div class="fp-roles">
+      <span class="fp-pill pp-admin"><i class="bi bi-shield-fill-check"></i>Admin</span>
+      <span class="fp-pill pp-teach"><i class="bi bi-person-badge-fill"></i>Teacher</span>
+      <span class="fp-pill pp-stu"><i class="bi bi-mortarboard-fill"></i>Student</span>
+      <span class="fp-pill pp-par"><i class="bi bi-people-fill"></i>Parent</span>
+      <span class="fp-pill pp-acct"><i class="bi bi-calculator-fill"></i>Accountant</span>
+    </div>
+    <div class="fp-chips">
+      <span class="fp-chip"><i class="bi bi-people-fill"></i>Students</span>
+      <span class="fp-chip"><i class="bi bi-calendar-check-fill"></i>Attendance</span>
+      <span class="fp-chip"><i class="bi bi-robot"></i>AI Analytics</span>
+      <span class="fp-chip"><i class="bi bi-bar-chart-fill"></i>Results</span>
+      <span class="fp-chip"><i class="bi bi-book-fill"></i>Academics</span>
+      <span class="fp-chip"><i class="bi bi-shield-check-fill"></i>Secure</span>
+    </div>
+    <span class="fp-badge"><i class="bi bi-patch-check-fill"></i> Scholaro ERP · v2.0</span>
+  </div>
+</div>
+
+<div class="login-panel">
+  <div class="lp-brand">
+    <div class="lp-logo"><i class="bi bi-mortarboard-fill"></i></div>
+    <div><div class="lp-name">Scholaro ERP</div><div class="lp-sub">Smart Result Analysis System</div></div>
+  </div>
+  <div class="lp-welcome"><h2>Welcome Back</h2><p>Sign in to access your dashboard</p></div>
+  <div class="sec-hd">Credentials</div>
+  {% if messages %}{% for message in messages %}
+    {% if message.tags == 'success' %}<div class="g-banner b-ok"><i class="bi bi-check-circle-fill"></i><span>{{ message }}</span></div>
+    {% elif message.tags == 'warning' %}<div class="g-banner b-warn"><i class="bi bi-exclamation-triangle-fill"></i><span>{{ message }}</span></div>
+    {% else %}<div class="g-banner b-err js-err" data-msg="{{ message }}" style="display:none;"><i class="bi bi-exclamation-circle-fill"></i><span>{{ message }}</span></div>
+    {% endif %}
+  {% endfor %}{% endif %}
+  <form method="POST" action="{% url 'accounts:login' %}" autocomplete="on" novalidate id="loginForm">
+    {% csrf_token %}
+    <div class="field">
+      <label class="f-label" for="id_username">Username</label>
+      <div class="f-wrap">
+        <input class="f-input" type="text" id="id_username" name="username" placeholder="Enter your username" required autocomplete="username" autofocus spellcheck="false" autocapitalize="none">
+        <i class="bi bi-person-fill f-ico"></i>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label" for="id_password">Password</label>
+      <div class="f-wrap">
+        <input class="f-input" type="password" id="id_password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+        <i class="bi bi-lock-fill f-ico"></i>
+        <button type="button" class="eye-btn" onclick="togglePwd()"><i class="bi bi-eye-fill" id="eyeIcon"></i></button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="cap-hd">
+        <span class="cap-lbl">Security Verification</span>
+        <div class="cap-controls">
+          <span id="capTimerBadge">60s</span>
+          <button type="button" class="cap-btn" id="capBtn" onclick="refreshCaptcha()"><i class="bi bi-arrow-clockwise" id="capIcon"></i> Refresh</button>
+        </div>
+      </div>
+      <div class="cap-img"><img id="captchaImg" src="" alt="CAPTCHA" draggable="false" oncontextmenu="return false;"></div>
+      <input class="cap-input" type="text" name="captcha" id="id_captcha" placeholder="Type the 5 characters above" maxlength="6" required autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+    </div>
+    <button type="submit" class="btn-sub"><i class="bi bi-box-arrow-in-right"></i> Sign In</button>
+  </form>
+  <div class="lp-footer">
+    <div class="lp-copy">&copy; 2026 Scholaro ERP</div>
+  </div>
+</div>
+
+<script>
+/*
+  NEPAL FLAG — authentic double-pennant shape.
+
+  The flag is ONE combined outline:
+
+  Upper pennant (smaller):
+    - Top-left corner at pole top
+    - Top edge: goes diagonally DOWN-RIGHT to upper tip (right side)
+    - Bottom of upper: goes diagonally DOWN-LEFT back toward pole
+
+  Lower pennant (larger, directly below):
+    - Starts at pole where upper ended
+    - Top edge: goes diagonally UP-RIGHT to same area (creating the Z notch)
+    - Outer edge: goes DOWN to lower tip
+    - Bottom: goes back LEFT to pole bottom
+
+  The outline traces ONE continuous shape creating the classic
+  Nepal double-pennant / double-triangle form with a Z notch on the right.
+
+  No pole in flag body — left edge is the attachment (hoist) side.
+
+  Symbols:
+    - Moon (∪ crescent, horns up, spiky outer arc) in upper pennant
+    - Sun (12-ray star + solid centre) in lower pennant
+
+  Wave animation: right (free) edges oscillate; left (hoist) stays fixed.
+*/
+(function(){
+  var cv = document.getElementById('flagCanvas');
+  var ctx = cv.getContext('2d');
+  var W = 270, H = 310;
+  cv.width = W; cv.height = H;
+
+  /* ── Static geometry ── */
+  var LX = 36;   /* hoist X */
+  var Y0 = 14;   /* flag top */
+  var UH = 116;  /* upper pennant height */
+  var UW = 190;  /* upper tip width */
+  var LH = 160;  /* lower pennant height */
+  var LW = 190;  /* lower tip width */
+  var NX = 60;   /* notch X from hoist */
+
+  var BLUE = '#003893', RED = '#DC143C', WHITE = '#FFFFFF';
+  var BDR  = 8;   /* bold blue border thickness */
+
+  /* ── Animation state ── */
+  var t = 0;
+  var SPD   = 0.07;    /* time step per frame — controls wave travel speed */
+  var AMP   = 14;      /* max wave amplitude in pixels */
+  var WAVELEN = 1;  /* wave cycles across full flag width (higher = more ripples) */
+
+  /*
+    Cloth-wave displacement.
+    x0, y0  = static (rest) position of the point
+    xMax    = maximum x extent of the flag (used to normalise "freeness")
+    Returns {dx, dy} wave offset.
+
+    The wave travels rightward: phase = t - (x-offset / xMax) * 2π * WAVELEN
+    Amplitude scales with distance from hoist so the hoist stays fixed.
+  */
+  function wave(x0, xMax) {
+    var fFree  = Math.max(0, (x0 - LX) / xMax);  /* 0 at hoist, 1 at tip */
+    var phase  = t - fFree * Math.PI * 2 * WAVELEN;
+    var amp    = AMP * fFree * fFree;             /* quadratic ramp — smooth near hoist */
+    return {
+      dx: Math.sin(phase * 1.1) * amp * 0.18,    /* small x flutter */
+      dy: Math.sin(phase)       * amp             /* main vertical wave */
+    };
+  }
+
+  /* Apply wave to a static point */
+  function wpt(x, y, xMax) {
+    var w = wave(x, xMax);
+    return { x: x + w.dx, y: y + w.dy };
+  }
+
+  /*
+    Sample an edge from static point A to static point B into `steps` waved points.
+    Each intermediate point gets its own wave based on its x position.
+  */
+  function sampleEdge(Ax, Ay, Bx, By, xMax, steps) {
+    var pts = [];
+    for (var i = 0; i <= steps; i++) {
+      var f  = i / steps;
+      var sx = Ax + (Bx - Ax) * f;
+      var sy = Ay + (By - Ay) * f;
+      var p  = wpt(sx, sy, xMax);
+      pts.push(p);
+    }
+    return pts;
+  }
+
+  /* Append points to current path — NO moveTo, just lineTo */
+  function tracePath(pts) {
+    for (var i = 0; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  }
+
+  /* ── Draw flag: full crimson fill + bold blue border stroke ── */
+  function drawFlag() {
+    var S = 40, SN = 14, xMax = LW;
+
+    var oP0 = [LX,    Y0       ];
+    var oP1 = [LX+UW, Y0+UH   ];
+    var oP2 = [LX+NX, Y0+UH   ];
+    var oP3 = [LX+LW, Y0+UH+LH];
+    var oP4 = [LX,    Y0+UH+LH];
+
+    /* Build the complete waved outline once */
+    ctx.beginPath();
+    /* Start at hoist top — fixed point */
+    ctx.moveTo(oP0[0], oP0[1]);
+    tracePath(sampleEdge(oP0[0],oP0[1], oP1[0],oP1[1], xMax, S));
+    tracePath(sampleEdge(oP1[0],oP1[1], oP2[0],oP2[1], xMax, SN));
+    tracePath(sampleEdge(oP2[0],oP2[1], oP3[0],oP3[1], xMax, S));
+    tracePath(sampleEdge(oP3[0],oP3[1], oP4[0],oP4[1], xMax, S));
+    ctx.lineTo(oP4[0], oP4[1]);
+    ctx.closePath();
+
+    /* 1. Full crimson body */
+    ctx.fillStyle = RED;
+    ctx.fill();
+
+    /* 2. Bold blue border stroke */
+    ctx.strokeStyle = BLUE;
+    ctx.lineWidth   = BDR * 1;
+    ctx.lineJoin    = 'miter';
+    ctx.miterLimit  = 2.5;
+    ctx.stroke();
+  }
+
+  /* ── MOON ── */
+  function moonPos() {
+    /* Moon sits in the upper-left area of the upper pennant */
+    var sx = LX + UW * 0.30, sy = Y0 + UH * 0.60;
+    var p  = wpt(sx, sy, LW);
+    return p;
+  }
+
+  function drawMoon() {
+    var p = moonPos();
+    var cx = p.x, cy = p.y;
+    var R = 16, rCut = R*0.78, dCut = R*0.48;
+
+    /* Crescent via offscreen composite */
+    var pad = R+28, sz = pad*2;
+    var tmp = document.createElement('canvas');
+    tmp.width = tmp.height = sz;
+    var tc = tmp.getContext('2d'), ox = pad, oy = pad;
+    tc.beginPath(); tc.arc(ox, oy, R, 0, Math.PI*2); tc.fillStyle = WHITE; tc.fill();
+    tc.globalCompositeOperation = 'destination-out';
+    tc.beginPath(); tc.arc(ox, oy-dCut, rCut, 0, Math.PI*2); tc.fill();
+    tc.globalCompositeOperation = 'source-over';
+    ctx.drawImage(tmp, cx-ox, cy-oy);
+
+    
+   
+
+    /* Half-sun inside bowl — rays UP */
+    ctx.fillStyle = WHITE;
+    ctx.save();
+    ctx.translate(cx, cy + dCut*0.22);
+    var hR = R*0.34, hRay = R*0.70, hRi = R*0.26, hN = 8;
+    ctx.beginPath();
+    for (var i = 0; i <= hN*2; i++) {
+      var frac = i / (hN*2);
+      var ang  = -Math.PI + frac * Math.PI;
+      var r    = (i%2===0) ? hRay : hRi;
+      if (i===0) ctx.moveTo(r*Math.cos(ang), r*Math.sin(ang));
+      else        ctx.lineTo(r*Math.cos(ang), r*Math.sin(ang));
+    }
+    ctx.lineTo(hR, 0);
+    ctx.arc(0, 0, hR, 0, Math.PI, false);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  /* ── SUN ── */
+  function drawSun() {
+    var sx = LX + LW*0.29, sy = Y0 + UH + LH*0.46;
+    var p  = wpt(sx, sy, LW);
+    var rO = 23, rI = 11, rC = 12, N = 12;
+    ctx.save(); ctx.translate(p.x, p.y); ctx.fillStyle = WHITE;
+    ctx.beginPath();
+    for (var i = 0; i < N*2; i++) {
+      var r = (i%2===0) ? rO : rI;
+      var a = (i/(N*2)) * Math.PI*2 - Math.PI/2;
+      if (i===0) ctx.moveTo(r*Math.cos(a), r*Math.sin(a));
+      else        ctx.lineTo(r*Math.cos(a), r*Math.sin(a));
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0, rC, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  /* ── Pole ── */
+  function drawPole() {
+    var pX = LX-6, pW = 6, pTop = Y0-10, pBot = Y0+UH+LH+18;
+    var g = ctx.createLinearGradient(pX, 0, pX+pW, 0);
+    g.addColorStop(0,'#555'); g.addColorStop(0.3,'#ddd');
+    g.addColorStop(0.65,'#aaa'); g.addColorStop(1,'#444');
+    ctx.fillStyle = g;
+    ctx.fillRect(pX, pTop, pW, pBot-pTop);
+    var kg = ctx.createRadialGradient(pX+pW*0.4, pTop+2, 1, pX+pW*0.5, pTop+3, 6);
+    kg.addColorStop(0,'#eee'); kg.addColorStop(1,'#777');
+    ctx.beginPath(); ctx.arc(pX+pW/2, pTop, 6, 0, Math.PI*2);
+    ctx.fillStyle = kg; ctx.fill();
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(pX-3, pBot-4, pW+6, 10, 3);
+    else ctx.rect(pX-3, pBot-4, pW+6, 10);
+    ctx.fillStyle = '#444'; ctx.fill();
+  }
+
+  /* ── Render loop ── */
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    drawFlag();
+    drawPole();
+    drawMoon();
+    drawSun();
+    t += SPD;
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+/* ── Error routing ── */
+var ORIG={id_username:'Enter your username',id_password:'Enter your password',id_captcha:'Type the 5 characters above'};
+var ERR_MAP=[
+  {kw:['captcha','security','characters','verification'],id:'id_captcha',ph:'Incorrect CAPTCHA — type again'},
+  {kw:['invalid username or password','invalid credentials','attempt'],id:'id_username',ph:'Invalid username or password'},
+  {kw:['username'],id:'id_username',ph:'Incorrect username — try again'},
+  {kw:['password'],id:'id_password',ph:'Wrong password — try again'},
+  {kw:['locked','wait','too many'],id:'id_username',ph:'Account locked — wait 60 s'},
+  {kw:['inactive','deactivated'],id:'id_username',ph:'Account inactive — contact admin'},
+];
+function applyErr(id,ph){var el=document.getElementById(id);if(!el)return;el.classList.add('err','shake');el.placeholder=ph;el.value='';el.addEventListener('animationend',function(){el.classList.remove('shake');},{once:true});el.addEventListener('focus',function(){el.classList.remove('err');el.placeholder=ORIG[id]||'';},{once:true});}
+
+/* ── CAPTCHA timer ── */
+var CAP_DUR=60,capLeft=CAP_DUR,capHandle=null;
+function _updateBadge(s){var el=document.getElementById('capTimerBadge');if(!el)return;var f=Math.max(0,s)/CAP_DUR,c,bg,bc;if(f>.5){c='#10b981';bg='rgba(16,185,129,.1)';bc='rgba(16,185,129,.25)';}else if(f>.2){c='#f59e0b';bg='rgba(245,158,11,.1)';bc='rgba(245,158,11,.25)';}else{c='#ef4444';bg='rgba(239,68,68,.1)';bc='rgba(239,68,68,.25)';}el.style.color=c;el.style.background=bg;el.style.borderColor=bc;el.textContent=Math.max(0,s)+'s';}
+function refreshCaptcha(auto){clearInterval(capHandle);capLeft=CAP_DUR;_updateBadge(CAP_DUR);var img=document.getElementById('captchaImg'),btn=document.getElementById('capBtn');btn.classList.add('spin');img.classList.add('ld');if(!auto)document.getElementById('id_captcha').value='';img.src="{% url 'accounts:captcha_image' %}?t="+Date.now();img.onload=function(){img.classList.remove('ld');btn.classList.remove('spin');if(!auto)document.getElementById('id_captcha').focus();capHandle=setInterval(function(){capLeft--;_updateBadge(capLeft);if(capLeft<=0){clearInterval(capHandle);refreshCaptcha(true);}},1000);};img.onerror=function(){img.classList.remove('ld');btn.classList.remove('spin');};}
+
+/* ── DOM Ready ── */
+document.addEventListener('DOMContentLoaded',function(){
+  refreshCaptcha(false);
+  document.querySelectorAll('.js-err').forEach(function(el){var msg=(el.getAttribute('data-msg')||'').toLowerCase(),matched=false;ERR_MAP.forEach(function(rule){if(matched)return;rule.kw.forEach(function(kw){if(!matched&&msg.indexOf(kw)!==-1){applyErr(rule.id,rule.ph);matched=true;}});});el.style.display=matched?'none':'flex';});
+  document.getElementById('loginForm').addEventListener('submit',function(e){var ok=true;if(!document.getElementById('id_username').value.trim()){applyErr('id_username','Username is required');ok=false;}if(!document.getElementById('id_password').value.trim()){applyErr('id_password','Password is required');ok=false;}var cp=document.getElementById('id_captcha');if(!cp.value.trim()){cp.classList.add('err','shake');cp.placeholder='Please type the CAPTCHA';cp.addEventListener('animationend',function(){cp.classList.remove('shake');},{once:true});cp.addEventListener('focus',function(){cp.classList.remove('err');cp.placeholder=ORIG.id_captcha;},{once:true});ok=false;}if(!ok)e.preventDefault();});
+  var ci=document.getElementById('id_captcha');if(ci)ci.addEventListener('input',function(){var p=this.selectionStart;this.value=this.value.toUpperCase();this.setSelectionRange(p,p);});
+});
+function togglePwd(){var i=document.getElementById('id_password'),ic=document.getElementById('eyeIcon');if(i.type==='password'){i.type='text';ic.className='bi bi-eye-slash-fill';}else{i.type='password';ic.className='bi bi-eye-fill';}}
+window.addEventListener('pageshow',function(e){document.getElementById('id_captcha').value='';if(e.persisted)refreshCaptcha(false);});
+</script>
+</body>
+</html>

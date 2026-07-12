@@ -1,0 +1,170 @@
+{% load static %}
+
+<nav class="navbar navbar-expand-lg" style="
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4f46e5 100%);
+    box-shadow: 0 2px 20px rgba(79,70,229,.4);
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+">
+    <div class="container-fluid px-4">
+
+        <!-- Brand -->
+        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-white text-decoration-none" href="#">
+            <div style="width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:10px;
+                        display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);">
+                <i class="bi bi-mortarboard-fill" style="font-size:1.2rem;color:#a5b4fc;"></i>
+            </div>
+            <span style="font-size:1.1rem;letter-spacing:.02em;">
+                Scholaro <span style="color:#a5b4fc;font-weight:300;">ERP</span>
+            </span>
+        </a>
+
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#topNav"
+                style="color:rgba(255,255,255,.8);">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-end" id="topNav">
+            <ul class="navbar-nav align-items-center gap-2">
+
+                <!-- Notification Bell -->
+                <li class="nav-item">
+                    <a href="{% url 'notifications:inbox' %}" class="btn position-relative"
+                       style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+                              border-radius:10px;color:white;width:38px;height:38px;padding:0;
+                              display:flex;align-items:center;justify-content:center;transition:all .2s;"
+                       onmouseover="this.style.background='rgba(255,255,255,.2)'"
+                       onmouseout="this.style.background='rgba(255,255,255,.1)'">
+                        <i class="bi bi-bell-fill" style="font-size:.9rem;"></i>
+                    </a>
+                </li>
+
+                <!-- User dropdown -->
+                <li class="nav-item dropdown">
+                    <button class="dropdown-toggle"
+                            id="userDropdown"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                            style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+                                   border-radius:10px;color:white;padding:4px 12px 4px 6px;
+                                   display:flex;align-items:center;gap:8px;cursor:pointer;
+                                   transition:all .2s;font-family:inherit;"
+                            onmouseover="this.style.background='rgba(255,255,255,.18)'"
+                            onmouseout="this.style.background='rgba(255,255,255,.1)'">
+                        <!-- Avatar initials -->
+                        <div style="width:30px;height:30px;background:linear-gradient(135deg,#a5b4fc,#818cf8);
+                                    border-radius:8px;display:flex;align-items:center;justify-content:center;
+                                    font-weight:800;font-size:.8rem;color:#1e1b4b;flex-shrink:0;">
+                            {{ request.user.get_full_name|default:request.user.username|first|upper }}
+                        </div>
+                        <div class="d-none d-md-block text-start" style="line-height:1.2;">
+                            <div style="font-size:.7rem;color:rgba(255,255,255,.55);">Logged in as</div>
+                            <div style="font-size:.85rem;color:#fff;font-weight:600;max-width:110px;
+                                        overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                {{ request.user.username }}
+                            </div>
+                        </div>
+                    </button>
+
+                    <!-- Dropdown menu -->
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg"
+                        style="background:#1e293b;border:1px solid #334155;border-radius:12px;
+                               padding:8px;min-width:210px;margin-top:8px;">
+
+                        <!-- User info header -->
+                        <li>
+                            <div style="padding:10px 12px 12px;border-bottom:1px solid #334155;margin-bottom:6px;">
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:40px;height:40px;border-radius:50%;flex-shrink:0;
+                                                background:linear-gradient(135deg,#4f46e5,#7c3aed);
+                                                display:flex;align-items:center;justify-content:center;
+                                                font-size:1rem;font-weight:800;color:#fff;">
+                                        {{ request.user.get_full_name|default:request.user.username|first|upper }}
+                                    </div>
+                                    <div style="min-width:0;">
+                                        <div style="font-size:.87rem;font-weight:700;color:#e2e8f0;
+                                                    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                            {{ request.user.get_full_name|default:request.user.username }}
+                                        </div>
+                                        <div style="font-size:.7rem;color:#64748b;">
+                                            <span style="background:rgba(99,102,241,.2);color:#a5b4fc;
+                                                         padding:1px 7px;border-radius:20px;font-weight:700;">
+                                                {% if request.user.role == "staff" and request.user.staff_profile.designation == "principal" %}Principal{% else %}{{ request.user.role|capfirst }}{% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
+                        <!-- Profile (opens modal for parent, link for others) -->
+                        {% if request.user.role == "parent" %}
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2"
+                               href="#" data-bs-toggle="modal" data-bs-target="#profileModal"
+                               style="color:#c7d2fe;border-radius:8px;padding:8px 12px;font-size:.87rem;
+                                      text-decoration:none;transition:background .15s;"
+                               onmouseover="this.style.background='rgba(99,102,241,.2)'"
+                               onmouseout="this.style.background='transparent'">
+                                <i class="bi bi-person-circle" style="font-size:1rem;color:#a5b4fc;"></i>
+                                My Profile
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <!-- Settings — change credentials -->
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2"
+                               href="{% url 'accounts:change_credentials' %}"
+                               style="color:#c7d2fe;border-radius:8px;padding:8px 12px;font-size:.87rem;
+                                      text-decoration:none;transition:background .15s;"
+                               onmouseover="this.style.background='rgba(99,102,241,.2)'"
+                               onmouseout="this.style.background='transparent'">
+                                <i class="bi bi-gear-fill" style="font-size:1rem;color:#6ee7b7;"></i>
+                                Settings
+                            </a>
+                        </li>
+
+                        <li><hr style="border-color:#334155;margin:6px 0;"></li>
+
+                        <!-- Logout -->
+                        <li>
+                            <form method="POST" action="{% url 'accounts:logout' %}" class="m-0">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="dropdown-item d-flex align-items-center gap-2"
+                                        style="color:#fca5a5;border-radius:8px;padding:8px 12px;font-size:.87rem;
+                                               background:transparent;border:none;width:100%;cursor:pointer;
+                                               font-family:inherit;transition:background .15s;"
+                                        onmouseover="this.style.background='rgba(239,68,68,.15)'"
+                                        onmouseout="this.style.background='transparent'">
+                                    <i class="bi bi-box-arrow-right" style="font-size:1rem;color:#f87171;"></i>
+                                    Logout
+                                </button>
+                            </form>
+                        </li>
+
+                    </ul>
+                </li><!-- /dropdown -->
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<script>
+(function () {
+    /* ── Font preference: persists in localStorage ── */
+    var NEPALI  = "sans-serif";
+    var ENGLISH = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+    var KEY     = "scholaro_font";
+
+    function applyFont(lang) {
+        document.body.style.fontFamily = lang === "en" ? ENGLISH : NEPALI;
+    }
+
+    var saved = localStorage.getItem(KEY) || "np";
+    applyFont(saved);
+})();
+</script>

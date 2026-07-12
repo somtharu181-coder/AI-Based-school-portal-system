@@ -1,0 +1,205 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mark Attendance — Scholaro ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{box-sizing:border-box;}body{font-family:'Inter',sans-serif;background:#f1f5f9;margin:0;}
+        .page-header{background:linear-gradient(135deg,#064e3b,#065f46,#10b981);color:white;padding:24px 32px;border-radius:0 0 24px 24px;margin-bottom:28px;box-shadow:0 8px 32px rgba(16,185,129,.3);}
+        .page-header h4{font-size:1.5rem;font-weight:800;margin:0;}
+        .page-header small{opacity:.8;font-size:.88rem;}
+        .filter-card{background:white;border-radius:16px;padding:22px 24px;box-shadow:0 2px 10px rgba(0,0,0,.07);border:1px solid #e2e8f0;margin-bottom:24px;}
+        .form-label{font-weight:600;font-size:.85rem;color:#374151;margin-bottom:6px;}
+        .form-control,.form-select{border:1.5px solid #e2e8f0;border-radius:10px;padding:9px 14px;font-size:.875rem;transition:all .2s;background:#f8fafc;font-family:'Inter',sans-serif;}
+        .form-control:focus,.form-select:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.12);background:white;outline:none;}
+        .btn-load{background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;border-radius:10px;padding:9px 20px;font-size:.875rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;width:100%;}
+        .btn-load:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(16,185,129,.4);}
+        .student-row{background:white;border-radius:12px;padding:14px 18px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.06);border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;transition:all .2s;}
+        .student-row:hover{box-shadow:0 3px 12px rgba(0,0,0,.1);}
+        .student-avatar{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#4f46e5,#818cf8);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:.9rem;flex-shrink:0;}
+        .status-btn{border:2px solid #e2e8f0;border-radius:8px;padding:5px 14px;cursor:pointer;font-size:.78rem;font-weight:600;background:white;transition:all .15s;font-family:'Inter',sans-serif;}
+        .status-btn:hover{opacity:.85;transform:translateY(-1px);}
+        .s-present{background:#10b981!important;color:white!important;border-color:#10b981!important;}
+        .s-absent{background:#ef4444!important;color:white!important;border-color:#ef4444!important;}
+        .s-late{background:#f59e0b!important;color:#000!important;border-color:#f59e0b!important;}
+        .s-half_day{background:#06b6d4!important;color:#000!important;border-color:#06b6d4!important;}
+        .s-holiday{background:#64748b!important;color:white!important;border-color:#64748b!important;}
+        .btn-save{background:linear-gradient(135deg,#4f46e5,#6366f1);color:white;border:none;border-radius:10px;padding:12px 36px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;}
+        .btn-save:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(79,70,229,.4);}
+        .btn-mark-all{border-radius:8px;padding:6px 14px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:'Inter',sans-serif;}
+        .alert{border-radius:10px;border:none;border-left:4px solid;font-size:.875rem;}
+        .section-info{background:rgba(255,255,255,.15);border-radius:10px;padding:8px 16px;font-size:.85rem;font-weight:600;}
+    </style>
+</head>
+<body>
+
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+        <h4><i class="bi bi-calendar-check-fill me-2"></i>Student Mark Attendance</h4>
+        <small>Select class, section and date — then mark each student</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'attendance:student_attendance_list' %}" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:7px 16px;font-size:.82rem;text-decoration:none;"><i class="bi bi-list-ul me-1"></i>View Records</a>
+        <a href="{% url 'accounts:staff_dashboard' %}" style="background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:7px 16px;font-size:.82rem;text-decoration:none;"><i class="bi bi-arrow-left me-1"></i>Dashboard</a>
+    </div>
+</div>
+
+<div class="container pb-5">
+
+    {% if messages %}
+        {% for m in messages %}
+            <div class="alert alert-{{ m.tags }} alert-dismissible fade show mb-3">
+                {{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if not sections %}
+    <div class="alert alert-warning">
+        <strong><i class="bi bi-exclamation-triangle-fill me-1"></i>No sections assigned to you as class teacher.</strong><br>
+        You can only take attendance for sections where you are assigned as the <strong>class teacher</strong>.
+        Please ask your administrator to assign you as class teacher for a section via <em>Academics → Assign Teacher</em>.
+    </div>
+    {% else %}
+
+    <!-- Filter Form -->
+    <div class="filter-card">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Class</label>
+                <select id="class-select" class="form-select">
+                    <option value="">— Select Class —</option>
+                    {% for c in classes %}<option value="{{ c.id }}">{{ c }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Section</label>
+                <select id="section-select" name="section_id" class="form-select">
+                    <option value="">— Select Section —</option>
+                    {% for s in sections %}
+                        <option value="{{ s.id }}" {% if selected_section and selected_section.id == s.id %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Date</label>
+                <input type="date" name="date" class="form-control" value="{{ date }}" max="{{ today }}">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn-load"><i class="bi bi-people-fill me-1"></i>Load Students</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    {% if selected_section and students %}
+
+    <form method="POST" id="attendance-form"
+          data-student-ids="{% for student in students %}{{ student.id }}{% if not forloop.last %},{% endif %}{% endfor %}">
+        {% csrf_token %}
+        <input type="hidden" name="section_id" value="{{ selected_section.id }}">
+        <input type="hidden" name="date" value="{{ date }}">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 style="font-weight:700;color:#1e293b;margin:0;">{{ selected_section }} — {{ date }}</h5>
+                <small style="color:#64748b;"><i class="bi bi-people me-1"></i>{{ students|length }} students</small>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn-mark-all" style="background:rgba(16,185,129,.1);color:#059669;border:1.5px solid rgba(16,185,129,.3);" onclick="markAll('present')"><i class="bi bi-check-all me-1"></i>All Present</button>
+                <button type="button" class="btn-mark-all" style="background:rgba(239,68,68,.1);color:#dc2626;border:1.5px solid rgba(239,68,68,.3);" onclick="markAll('absent')"><i class="bi bi-x-lg me-1"></i>All Absent</button>
+            </div>
+        </div>
+
+        {% for student in students %}
+        <div class="student-row">
+            <div class="d-flex align-items-center gap-3">
+                <div class="student-avatar">{{ student.name|first|upper|default:"S" }}</div>
+                <div>
+                    <div style="font-weight:600;color:#1e293b;font-size:.9rem;">{{ student.name|default:student }}</div>
+                    <div style="font-size:.75rem;color:#94a3b8;">Roll: {{ student.roll_number }} | ID: {{ student.student_id }}</div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                {% for val, label in status_choices %}
+                <button type="button" class="status-btn" data-student="{{ student.id }}" data-status="{{ val }}" id="btn-{{ student.id }}-{{ val }}">{{ label }}</button>
+                {% endfor %}
+                <input type="hidden" name="status_{{ student.id }}" id="inp-{{ student.id }}" value="absent">
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="mt-4 text-end">
+            <button type="submit" class="btn-save"><i class="bi bi-floppy-fill me-1"></i>Save Attendance</button>
+        </div>
+    </form>
+
+    {% elif selected_section %}
+        <div class="alert alert-warning">No active students found in {{ selected_section }}.</div>
+    {% else %}
+        <div class="alert alert-info"><i class="bi bi-info-circle me-1"></i>Select a class and section above, then click <strong>Load Students</strong>.</div>
+    {% endif %}
+
+</div>
+
+<script id="existing-data" type="application/json">{{ existing_map_json|safe }}</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const STATUS_KEYS = ["present", "absent", "late", "half_day", "holiday"];
+function setStatus(studentId, val) {
+    var inp = document.getElementById("inp-" + studentId);
+    if (inp) { inp.value = val; }
+    STATUS_KEYS.forEach(function(s) {
+        var btn = document.getElementById("btn-" + studentId + "-" + s);
+        if (!btn) { return; }
+        STATUS_KEYS.forEach(function(k) { btn.classList.remove("s-" + k); });
+        if (s === val) { btn.classList.add("s-" + val); }
+    });
+}
+function markAll(val) {
+    var form = document.getElementById("attendance-form");
+    if (!form) { return; }
+    var ids = form.getAttribute("data-student-ids");
+    if (!ids) { return; }
+    ids.split(",").forEach(function(id) { if (id.trim()) { setStatus(id.trim(), val); } });
+}
+document.addEventListener("click", function(e) {
+    var btn = e.target.closest(".status-btn");
+    if (!btn) { return; }
+    var studentId = btn.getAttribute("data-student");
+    var status = btn.getAttribute("data-status");
+    if (studentId && status) { setStatus(studentId, status); }
+});
+var classSelect = document.getElementById("class-select");
+if (classSelect) {
+    classSelect.addEventListener("change", function() {
+        var classId = this.value;
+        var sel = document.getElementById("section-select");
+        sel.innerHTML = '<option value="">— Select Section —</option>';
+        if (!classId) { return; }
+        fetch("{% url 'attendance:get_sections' %}?class_id=" + classId)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                data.sections.forEach(function(s) {
+                    var o = document.createElement("option");
+                    o.value = s.id; o.textContent = s.name;
+                    sel.appendChild(o);
+                });
+            });
+    });
+}
+document.addEventListener("DOMContentLoaded", function() {
+    var raw = document.getElementById("existing-data");
+    if (!raw) { return; }
+    try {
+        var map = JSON.parse(raw.textContent || raw.innerHTML);
+        Object.keys(map).forEach(function(sid) { setStatus(sid, map[sid] || "absent"); });
+    } catch(e) { console.warn("Could not parse existing attendance data:", e); }
+});
+</script>
+</body>
+</html>
